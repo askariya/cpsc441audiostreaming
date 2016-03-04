@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="/home/phil/Desktop/mp3 player/tritonus_share.jar"/>
-	<classpathentry kind="lib" path="/home/phil/Desktop/mp3 player/jl1.0.1.jar"/>
-	<classpathentry kind="lib" path="/home/phil/Desktop/mp3 player/mp3spi1.9.5.jar"/>
+	<classpathentry kind="lib" path="/home/askariya/Documents/CPSC441/Audio Streaming Final Project/cpsc441audiostreaming/mp3player/jl1.0.1.jar"/>
+	<classpathentry kind="lib" path="/home/askariya/Documents/CPSC441/Audio Streaming Final Project/cpsc441audiostreaming/mp3player/mp3spi1.9.5.jar"/>
+	<classpathentry kind="lib" path="/home/askariya/Documents/CPSC441/Audio Streaming Final Project/cpsc441audiostreaming/mp3player/tritonus_share.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
