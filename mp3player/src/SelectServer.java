@@ -157,7 +157,7 @@ public class SelectServer {
                                 //TODO splitCmd[0].contains("play") <-- use for selecting song later
                                 else if(line.equals("play\n"))
                                 {
-                                	tcp_play(clientChannel,buff);
+                                	tcp_playsong(clientChannel,buff);
                                 }
                                 /********************************************************************************************************/
 
@@ -242,13 +242,14 @@ public class SelectServer {
     }
     
     /*************************************AUDIO STREAMING CODE*************************************************/
+   
     /**
      * Code for streaming audio
      * @param clientChannel
      * @param buff
      * @throws IOException
      */
-    public static void tcp_play(SocketChannel clientChannel, ByteBuffer buff) throws IOException
+    public static void tcp_playsong(SocketChannel clientChannel, ByteBuffer buff) throws IOException
     {
     	//find the mp3 file
     	File soundFile = new File("why.mp3"); 
@@ -258,22 +259,21 @@ public class SelectServer {
              throw new IllegalArgumentException("Not a file: " + soundFile);
     	 
     	 FileInputStream in = new FileInputStream(soundFile); //use this to read the file
-    	 OutputStream out = clientChannel.socket().getOutputStream(); //use this to write the file to the client
+//    	 OutputStream out = clientChannel.socket().getOutputStream(); // <-- This didn't work
     	 
     	 
     	 
     	 int count;
-    	 byte buffer[] = new byte[2048];
+    	 byte buffer[] = new byte[4096];
     	 
-    	 //TODO fix error here
-    	 //read the contents of the audio file into a buffer
+    	 //read the contents of the audio file and write into a buffer
          while ((count = in.read(buffer)) != -1){
         	 buff = ByteBuffer.wrap(buffer);
         	 clientChannel.write(buff);
-//        	 out.write(buffer, 0, count); //write contents to client
         	 
+//        	 out.write(buffer, 0, count); //write contents to client <-- This didn't work
          }
-    	 
+         System.out.println("Finished server side 'play'");
     }
     
     /********************************************************************************************************/
