@@ -18,6 +18,7 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 
+
 class TCPClient { 
 
     public static void main(String args[]) throws Exception 
@@ -73,17 +74,42 @@ class TCPClient {
             // SPECIAL CASE: PLAY COMMAND
             //TODO splitCmd[0].contains("play") <-- use for selecting song later
             else if(line.equals("play")){
+            	
+            	AudioInputStream din = null;
+            	
             	InputStream inFromServer = new BufferedInputStream(clientSocket.getInputStream());
             	
-            	//EXTERNAL CODE
-        			AudioInputStream inAudio = AudioSystem.getAudioInputStream(inFromServer);
-        			try (Clip clip = AudioSystem.getClip()) {
-        	            clip.open(inAudio);
-        	            clip.start();
-        	            Thread.sleep(100); // given clip.drain a chance to start
-        	            clip.drain();
-        	        }
-        			
+            	// Clip clip = AudioSystem.getClip();
+                AudioInputStream ais = AudioSystem.getAudioInputStream(inFromServer); 
+                 
+                
+                //EXTERNAL CODE
+                AudioFormat baseFormat = ais.getFormat();
+     			AudioFormat decodedFormat = new AudioFormat(
+     					AudioFormat.Encoding.PCM_SIGNED,
+     					baseFormat.getSampleRate(), 16, baseFormat.getChannels(),
+     					baseFormat.getChannels() * 2, baseFormat.getSampleRate(),
+     					false);
+     			din = AudioSystem.getAudioInputStream(decodedFormat, ais);
+     			DataLine.Info info = new DataLine.Info(SourceDataLine.class, decodedFormat);
+     			SourceDataLine sdline = (SourceDataLine) AudioSystem.getLine(info);
+     			if(sdline != null) {
+     				sdline.open(decodedFormat);
+     				byte[] data = new byte[4096];
+     				// Start
+     				sdline.start();
+     				
+     				int nBytesRead;
+     				while ((nBytesRead = din.read(data, 0, data.length)) != -1) {	
+     					sdline.write(data, 0, nBytesRead);
+     				}
+     				// Stop
+     				sdline.drain();
+     				sdline.stop();
+     				sdline.close();
+     				din.close();
+     			}
+                 
             }
             /********************************************************************************************************/
 			

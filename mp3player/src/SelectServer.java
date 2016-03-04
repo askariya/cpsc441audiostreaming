@@ -251,7 +251,7 @@ public class SelectServer {
     public static void tcp_play(SocketChannel clientChannel, ByteBuffer buff) throws IOException
     {
     	//find the mp3 file
-    	File soundFile = new File("lastcaress.mp3"); 
+    	File soundFile = new File("why.mp3"); 
     	
     	//Check that the mp3 file exists
     	 if (!soundFile.exists() || !soundFile.isFile()) 
@@ -260,12 +260,18 @@ public class SelectServer {
     	 FileInputStream in = new FileInputStream(soundFile); //use this to read the file
     	 OutputStream out = clientChannel.socket().getOutputStream(); //use this to write the file to the client
     	 
+    	 
+    	 
     	 int count;
     	 byte buffer[] = new byte[2048];
     	 
+    	 //TODO fix error here
     	 //read the contents of the audio file into a buffer
          while ((count = in.read(buffer)) != -1){
-        	 out.write(buffer, 0, count); //write contents to client
+        	 buff = ByteBuffer.wrap(buffer);
+        	 clientChannel.write(buff);
+//        	 out.write(buffer, 0, count); //write contents to client
+        	 
          }
     	 
     }
