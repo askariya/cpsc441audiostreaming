@@ -13,4 +13,4 @@ TODO:
 
 see http://www.javalobby.org/java/forums/t18465.html for information on mp3 playback.
 
-google adding exteral jars to eclipes project class path - there are there are three jars that must be added for mp3 playback to work properly.
+google adding external jars to eclipes project class path - there are three jars that must be added for mp3 playback to work properly.
