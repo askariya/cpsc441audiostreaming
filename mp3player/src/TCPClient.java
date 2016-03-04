@@ -11,6 +11,13 @@ import java.io.*;
 import java.nio.file.*;
 import java.net.*; 
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.SourceDataLine;
+
 class TCPClient { 
 
     public static void main(String args[]) throws Exception 
@@ -60,6 +67,26 @@ class TCPClient {
 					}
 				}
 			}
+			
+			/*************************************AUDIO STREAMING CODE*************************************************/
+            
+            // SPECIAL CASE: PLAY COMMAND
+            //TODO splitCmd[0].contains("play") <-- use for selecting song later
+            else if(line.equals("play")){
+            	InputStream inFromServer = new BufferedInputStream(clientSocket.getInputStream());
+            	
+            	//EXTERNAL CODE
+        			AudioInputStream inAudio = AudioSystem.getAudioInputStream(inFromServer);
+        			try (Clip clip = AudioSystem.getClip()) {
+        	            clip.open(inAudio);
+        	            clip.start();
+        	            Thread.sleep(100); // given clip.drain a chance to start
+        	            clip.drain();
+        	        }
+        			
+            }
+            /********************************************************************************************************/
+			
 
 			else if (splitCmd[0].equals("get")) {
 

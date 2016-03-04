@@ -149,6 +149,17 @@ public class SelectServer {
                                 {
                                     tcp_list(clientChannel,buff);
                                 }
+                                
+                                
+                                /*************************************AUDIO STREAMING CODE*************************************************/
+                                
+                                // SPECIAL CASE: PLAY COMMAND
+                                //TODO splitCmd[0].contains("play") <-- use for selecting song later
+                                else if(line.equals("play\n"))
+                                {
+                                	tcp_play(clientChannel,buff);
+                                }
+                                /********************************************************************************************************/
 
                                 // SPECIAL CASE: GET COMMAND
                                 else if(splitCmd[0].contains("get"))
@@ -168,16 +179,7 @@ public class SelectServer {
                                     }
                                 }
                                 
-                                /*************************************AUDIO STREAMING CODE*************************************************/
                                 
-                                //splitCmd[0].contains("play") <-- use for selecting song later
-                                else if(line.equals("play\n")){
-                                	
-                                }
-                                
-                                
-                                
-                                /********************************************************************************************************/
                                 // SPECIAL CASE: TERMINATE COMMAND
                                 else if(line.equals("terminate\n"))
                                 {
@@ -241,14 +243,31 @@ public class SelectServer {
     
     /*************************************AUDIO STREAMING CODE*************************************************/
     /**
-     * Code for streaming audio files to client
+     * Code for streaming audio
      * @param clientChannel
      * @param buff
      * @throws IOException
      */
     public static void tcp_play(SocketChannel clientChannel, ByteBuffer buff) throws IOException
     {
+    	//find the mp3 file
+    	File soundFile = new File("lastcaress.mp3"); 
     	
+    	//Check that the mp3 file exists
+    	 if (!soundFile.exists() || !soundFile.isFile()) 
+             throw new IllegalArgumentException("Not a file: " + soundFile);
+    	 
+    	 FileInputStream in = new FileInputStream(soundFile); //use this to read the file
+    	 OutputStream out = clientChannel.socket().getOutputStream(); //use this to write the file to the client
+    	 
+    	 int count;
+    	 byte buffer[] = new byte[2048];
+    	 
+    	 //read the contents of the audio file into a buffer
+         while ((count = in.read(buffer)) != -1){
+        	 out.write(buffer, 0, count); //write contents to client
+         }
+    	 
     }
     
     /********************************************************************************************************/
