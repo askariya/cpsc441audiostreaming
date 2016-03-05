@@ -155,9 +155,26 @@ public class SelectServer {
                                 
                                 // SPECIAL CASE: PLAY COMMAND
                                 //TODO splitCmd[0].contains("play") <-- use for selecting song later
-                                else if(line.equals("play\n"))
+                                else if(splitCmd[0].contains("play"))
                                 {
-                                	tcp_playsong(clientChannel,buff);
+                                	// Check if there is a filename
+                                	if(splitCmd.length == 1)
+                                    {
+                                		buff = ByteBuffer.wrap("Invalid use of play\n".getBytes());
+                                        // Signal a bad "play" request to client
+                                        clientChannel.write(buff);
+                                	}
+                                    // if there is a filename -> get the file
+                                	else
+                                    {
+                                        String fileName = splitCmd[1];
+                                        
+                                        buff = ByteBuffer.wrap(fileName.getBytes());
+                                        // Signal a good "play" request to client
+                                        clientChannel.write(buff);
+                                        
+                                        tcp_playsong(fileName,clientChannel,buff);
+                                    }
                                 }
                                 /********************************************************************************************************/
 
@@ -249,12 +266,16 @@ public class SelectServer {
      * @param buff
      * @throws IOException
      */
-    public static void tcp_playsong(SocketChannel clientChannel, ByteBuffer buff) throws IOException
+    public static void tcp_playsong(String fileName, SocketChannel clientChannel, ByteBuffer buff) throws IOException
     {
+    	//parse string to appear in mp3 format
+    	String songName = fileName.substring(0, fileName.length()-1).concat(".mp3");
+    	
     	//find the mp3 file
-    	File soundFile = new File("why.mp3"); 
+    	File soundFile = new File(songName); 
     	
     	//Check that the mp3 file exists
+    	//TODO send message back to the client if the song doesn't exist instead of throwing an exception
     	 if (!soundFile.exists() || !soundFile.isFile()) 
              throw new IllegalArgumentException("Not a file: " + soundFile);
     	 

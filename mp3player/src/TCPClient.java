@@ -73,61 +73,72 @@ class TCPClient {
             
             // SPECIAL CASE: PLAY COMMAND
             //TODO splitCmd[0].contains("play") <-- use for selecting song later
-            else if(line.equals("play")){
+            else if(splitCmd[0].contains("play")){
             	
-            	AudioInputStream din = null;
+            	String initialResponse = inBuffer.readLine();
+				if (initialResponse.equals("Invalid use of play")) {
+						System.out.println(initialResponse);
+					
+				}
+				
+				else if(initialResponse != null){
+					
+					AudioInputStream din = null;
+	            	
+	            	try {
+	                	InputStream inFromServer = new BufferedInputStream(clientSocket.getInputStream());
+	                	
+	                	// Clip clip = AudioSystem.getClip();
+	                    AudioInputStream ais = AudioSystem.getAudioInputStream(inFromServer); 
+	                     
+	                    
+	                    //EXTERNAL CODE
+	                    AudioFormat baseFormat = ais.getFormat();
+	         			AudioFormat decodedFormat = new AudioFormat(
+	         					AudioFormat.Encoding.PCM_SIGNED,
+	         					baseFormat.getSampleRate(), 16, baseFormat.getChannels(),
+	         					baseFormat.getChannels() * 2, baseFormat.getSampleRate(),
+	         					false);
+	         			din = AudioSystem.getAudioInputStream(decodedFormat, ais);
+	         			DataLine.Info info = new DataLine.Info(SourceDataLine.class, decodedFormat);
+	         			SourceDataLine sdline = (SourceDataLine) AudioSystem.getLine(info);
+	         			
+	         			if(sdline != null) {
+	         				sdline.open(decodedFormat);
+	         				byte[] data = new byte[4096];
+	         				// Start
+	         				sdline.start();
+	         				
+	         				int nBytesRead;
+	         				while ((nBytesRead = din.read(data, 0, data.length)) != -1) {	
+	         					
+	         					//TODO Code never exits this loop (I think)
+	         					//if I break out of the loop manually, server sends a 'read error' message"
+	         					sdline.write(data, 0, nBytesRead); 
+	         				}
+	         				System.out.println("exited loop");
+	         				// Stop
+	         				sdline.drain();
+	         				sdline.stop();
+	         				sdline.close();
+	         				din.close();
+	         			}
+	         			
+	            	}
+	            	catch(Exception e) {
+	        			e.printStackTrace();
+	        		}
+	        		finally {
+	        			if(din != null) {
+	        				try { din.close(); } catch(IOException e) { }
+	        			}
+	        		}
+	            	
+	     			
+	     			System.out.println("Finished client side");
+				}
             	
-            	try {
-                	InputStream inFromServer = new BufferedInputStream(clientSocket.getInputStream());
-                	
-                	// Clip clip = AudioSystem.getClip();
-                    AudioInputStream ais = AudioSystem.getAudioInputStream(inFromServer); 
-                     
-                    
-                    //EXTERNAL CODE
-                    AudioFormat baseFormat = ais.getFormat();
-         			AudioFormat decodedFormat = new AudioFormat(
-         					AudioFormat.Encoding.PCM_SIGNED,
-         					baseFormat.getSampleRate(), 16, baseFormat.getChannels(),
-         					baseFormat.getChannels() * 2, baseFormat.getSampleRate(),
-         					false);
-         			din = AudioSystem.getAudioInputStream(decodedFormat, ais);
-         			DataLine.Info info = new DataLine.Info(SourceDataLine.class, decodedFormat);
-         			SourceDataLine sdline = (SourceDataLine) AudioSystem.getLine(info);
-         			
-         			if(sdline != null) {
-         				sdline.open(decodedFormat);
-         				byte[] data = new byte[4096];
-         				// Start
-         				sdline.start();
-         				
-         				int nBytesRead;
-         				while ((nBytesRead = din.read(data, 0, data.length)) != -1) {	
-         					
-         					//TODO Code never exits this loop (I think)
-         					//if I break out of the loop manually, server sends a 'read error' message"
-         					sdline.write(data, 0, nBytesRead); 
-         				}
-         				System.out.println("exited loop");
-         				// Stop
-         				sdline.drain();
-         				sdline.stop();
-         				sdline.close();
-         				din.close();
-         			}
-         			
-            	}
-            	catch(Exception e) {
-        			e.printStackTrace();
-        		}
-        		finally {
-        			if(din != null) {
-        				try { din.close(); } catch(IOException e) { }
-        			}
-        		}
             	
-     			
-     			System.out.println("Finished client side");
             }
             /********************************************************************************************************/
 			

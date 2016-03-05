@@ -38,6 +38,7 @@ public class JLayerPlayer {
 				din.close();
 			}
 			
+			
 		}
 		catch(Exception e) {
 			e.printStackTrace();
