@@ -26,8 +26,8 @@ public class MultiThreadServer implements Runnable {
       this.clientSocket = csocket;
    }
 
-   public static void main(String args[]) 
-   throws Exception {
+   
+   public static void main(String args[]) throws Exception {
       
 	  ServerSocket serverSocket = new ServerSocket(1234);
       System.out.println("Listening");
@@ -47,7 +47,7 @@ public class MultiThreadServer implements Runnable {
    public void run() {
       
 	   
-	   /***** OLD Code *******/
+	   /******* OLD Code *******/
 //	   try {
 //    	  
 //         PrintStream pstream = new PrintStream(clientSocket.getOutputStream());
@@ -62,19 +62,24 @@ public class MultiThreadServer implements Runnable {
 //         System.out.println(e);
 //      }
 	   
+	   
+	   /******* NEW Code *******/
 	   try{
 		   
-		   FileInputStream in = new FileInputStream("lastcaress.mp3");
-		   OutputStream out = clientSocket.getOutputStream(); //get the output stream for the client
-		   byte buffer[] = new byte[2048];
+		   FileInputStream in = new FileInputStream("why.mp3");
+		   
+		   OutputStream out = clientSocket.getOutputStream(); //get the output stream to the client
+		   byte buffer[] = new byte[4096];
 		   int count;
-		   while ((count = in.read(buffer)) != -1)
+		   while ((count = in.read(buffer)) != -1) //write the audio to the client
 			   out.write(buffer, 0, count);
            
 	   }catch (IOException e) {
 		   System.out.println(e);
 	   }
-      
+	   
+	   
+      System.out.println("Server: End");
   }
    
    
@@ -98,7 +103,7 @@ public class MultiThreadServer implements Runnable {
    
    
    
-   
+   /*****************************************************ServerSelect Code*********************************************/
    
    
    

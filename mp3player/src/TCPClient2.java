@@ -12,6 +12,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 
 public class TCPClient2 {
@@ -25,11 +26,11 @@ public class TCPClient2 {
         }
 
         // Initialize a client socket connection to the server
-        Socket clientSocket = new Socket(args[0], Integer.parseInt(args[1])); 
+        Socket clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
 
         // Initialize input and an output stream for the connection(s)
 		PrintWriter outBuffer =
-			new PrintWriter(clientSocket.getOutputStream(), true);
+		new PrintWriter(clientSocket.getOutputStream(), true);
 		
         BufferedReader inBuffer = 
           new BufferedReader(new
@@ -41,29 +42,20 @@ public class TCPClient2 {
         new BufferedReader(new InputStreamReader(System.in)); 
 
         // Get user input and send to the server
-        // Display the echo meesage from the server
         System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");
         line = inFromUser.readLine(); 
         
+   
         AudioInputStream din = null;
         
         try{
-
-            InputStream inFromServer = new BufferedInputStream(clientSocket.getInputStream());
-//            
-//            AudioInputStream ais = AudioSystem.getAudioInputStream(in);
-//            try (Clip clip = AudioSystem.getClip()) {
-//                clip.open(ais);
-//                clip.start();
-//                Thread.sleep(100); // given clip.drain a chance to start
-//                clip.drain();
-//            }
+        	//Read the audio from the server
+        	InputStream inFromServer = new BufferedInputStream(clientSocket.getInputStream());
         	
-        	// Clip clip = AudioSystem.getClip();
             AudioInputStream ais = AudioSystem.getAudioInputStream(inFromServer); 
              
             
-            //EXTERNAL CODE
+            //EXTERNAL CODE (Playing the audio)
             AudioFormat baseFormat = ais.getFormat();
  			AudioFormat decodedFormat = new AudioFormat(
  					AudioFormat.Encoding.PCM_SIGNED,
@@ -99,8 +91,11 @@ public class TCPClient2 {
         {
         	System.out.println(e);
         }
+//        
         
+        System.out.println("Client: END");
         
         
     }
+	
 }
