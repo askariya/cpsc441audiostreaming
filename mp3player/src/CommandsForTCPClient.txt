@@ -4,9 +4,9 @@ These commands need to be executed in the following order for the Client side (T
 
 1. COMPILE the code with the audio jars
 
-javac -cp .:mp3spi1.9.5.jar:tritonus_share.jar:jl1.0.1.jar TCPClient.java
+javac -cp .:mp3spi1.9.5.jar:tritonus_share.jar:jl1.0.1.jar TCPClient2.java
 
 
 2. RUN the code with the new audio jars
 
-java -cp .:mp3spi1.9.5.jar:tritonus_share.jar:jl1.0.1.jar TCPClient 127.0.0.1 1234
+java -cp .:mp3spi1.9.5.jar:tritonus_share.jar:jl1.0.1.jar TCPClient2 127.0.0.1 1234
