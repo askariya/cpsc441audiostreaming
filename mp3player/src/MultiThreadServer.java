@@ -66,10 +66,10 @@ public class MultiThreadServer implements Runnable {
 	   /******* NEW Code *******/
 	   try{
 		   
-		   FileInputStream in = new FileInputStream("why.mp3");
+		   FileInputStream in = new FileInputStream("why.wav");
 		   
 		   OutputStream out = clientSocket.getOutputStream(); //get the output stream to the client
-		   byte buffer[] = new byte[4096];
+		   byte buffer[] = new byte[8192];
 		   int count;
 		   while ((count = in.read(buffer)) != -1) //write the audio to the client
 			   out.write(buffer, 0, count);

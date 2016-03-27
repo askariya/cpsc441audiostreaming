@@ -55,7 +55,8 @@ public class TCPClient2 {
             AudioInputStream ais = AudioSystem.getAudioInputStream(inFromServer); 
              
             
-            //EXTERNAL CODE (Playing the audio)
+            //EXTERNAL CODE (Playing the audio) 
+            //ONLY works properly for .wav files
             AudioFormat baseFormat = ais.getFormat();
  			AudioFormat decodedFormat = new AudioFormat(
  					AudioFormat.Encoding.PCM_SIGNED,
@@ -74,9 +75,7 @@ public class TCPClient2 {
  				
  				int nBytesRead;
  				while ((nBytesRead = din.read(data, 0, data.length)) != -1) {	
- 					
- 					//TODO Code never exits this loop (I think)
- 					//if I break out of the loop manually, server sends a 'read error' message"
+ 				
  					sdline.write(data, 0, nBytesRead); 
  				}
  				System.out.println("exited loop");
