@@ -11,6 +11,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -45,12 +46,59 @@ public class TCPClient2 {
         System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");
         line = inFromUser.readLine(); 
         
-   
-        AudioInputStream din = null;
+        //Activate a PlayWAV thread to play the song
+        new Thread(new PlayWAV(clientSocket)).start();
+        
+        
+        //TODO Continue with Client execution (prompting new commands)
+        
+        System.out.println("Client: END");
+        
+        
+    }
+	
+}
+
+
+//This class handles the playing of the audio file
+class PlayWAV extends Thread{
+	
+	//holds a copy of the current client socket
+	private Socket clientSocketWAV;
+	
+	public PlayWAV(Socket sock){
+		this.clientSocketWAV = sock; 
+	}
+	
+	// The parent thread.
+    private Thread parent;
+    
+    // Constructor to set the parent thread
+    public PlayWAV(Thread parent)
+    {
+        setParentThread(parent);
+    }
+    
+    // Hide the default constructor to force calling the other.
+    private PlayWAV(){}
+    
+    // Set the parent thread, so we can test to see if the parent
+    // thread of this thread is alive.  If it is not, we will exit
+    // this thread after closing the line and the stream.
+    public void setParentThread(Thread parent)
+    {
+        this.parent = parent;
+    }
+    
+    
+    //run method (Where the audio can be played)
+    public void run(){
+    	
+    	AudioInputStream din = null;
         
         try{
         	//Read the audio from the server
-        	InputStream inFromServer = new BufferedInputStream(clientSocket.getInputStream());
+        	InputStream inFromServer = new BufferedInputStream(clientSocketWAV.getInputStream());
         	
             AudioInputStream ais = AudioSystem.getAudioInputStream(inFromServer); 
              
@@ -70,7 +118,7 @@ public class TCPClient2 {
  			if(sdline != null) {
  				sdline.open(decodedFormat);
  				byte[] data = new byte[4096];
- 				// Start
+ 				// Start playing sound
  				sdline.start();
  				
  				int nBytesRead;
@@ -86,15 +134,11 @@ public class TCPClient2 {
  				din.close();
  			}
  		
-        }catch(IOException e)
+        }catch(IOException | LineUnavailableException | UnsupportedAudioFileException e) //all the possible exceptions
         {
         	System.out.println(e);
         }
 //        
-        
-        System.out.println("Client: END");
-        
-        
     }
-	
+    
 }
