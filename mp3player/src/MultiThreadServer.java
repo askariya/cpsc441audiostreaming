@@ -29,7 +29,7 @@ public class MultiThreadServer implements Runnable {
    
    public static void main(String args[]) throws Exception {
       
-	  ServerSocket serverSocket = new ServerSocket(1234);
+	  ServerSocket serverSocket = new ServerSocket(9001);
       System.out.println("Listening");
       
       
@@ -66,7 +66,7 @@ public class MultiThreadServer implements Runnable {
 	   /******* NEW Code *******/
 	   try{
 		   
-		   FileInputStream in = new FileInputStream("why.wav");
+		   FileInputStream in = new FileInputStream("lastcaress.wav");
 		   
 		   OutputStream out = clientSocket.getOutputStream(); //get the output stream to the client
 		   byte buffer[] = new byte[8192];
