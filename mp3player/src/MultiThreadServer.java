@@ -36,7 +36,7 @@ public class MultiThreadServer implements Runnable {
       //while the server is running, keep accepting connections from TCP clients (if any are available)
       while (true) {
          Socket sock = serverSocket.accept();
-         System.out.println("Connected");
+         System.out.println("Connected to client at Port #" + sock.getPort());
          new Thread(new MultiThreadServer(sock)).start();
       }
    }
@@ -45,43 +45,34 @@ public class MultiThreadServer implements Runnable {
     * Run method for the multithreaded Server
     */
    public void run() {
-      
 	   
-	   /******* OLD Code *******/
-//	   try {
-//    	  
-//         PrintStream pstream = new PrintStream(clientSocket.getOutputStream());
-//         for (int i = 100; i >= 0; i--) {
-//            pstream.println(i + 
-//            " bottles of beer on the wall");
-//         }
-//         pstream.close();
-//         clientSocket.close();
-//      }
-//      catch (IOException e) {
-//         System.out.println(e);
-//      }
+	   streamAudio();
 	   
+	   try {
+		clientSocket.close();
+	   }catch (IOException e) {
+		   e.printStackTrace();
+		} 
 	   
-	   /******* NEW Code *******/
+	   System.out.println("Server: End");
+  }
+   
+   
+  public void streamAudio(){
 	   try{
 		   
-		   FileInputStream in = new FileInputStream("ocean_man.wav");
+		   FileInputStream in = new FileInputStream("king_rat.wav");
 		   
 		   OutputStream out = clientSocket.getOutputStream(); //get the output stream to the client
 		   byte buffer[] = new byte[8192];
 		   int count;
 		   while ((count = in.read(buffer)) != -1) //write the audio to the client
 			   out.write(buffer, 0, count);
-           
+          
 	   }catch (IOException e) {
 		   System.out.println(e);
 	   }
-	   
-	   
-      System.out.println("Server: End");
   }
-   
    
    
 }

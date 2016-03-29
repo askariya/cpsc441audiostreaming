@@ -30,27 +30,47 @@ public class TCPClient2 {
         Socket clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
 
         // Initialize input and an output stream for the connection(s)
-		PrintWriter outBuffer =
-		new PrintWriter(clientSocket.getOutputStream(), true);
+		PrintWriter outBuffer = new PrintWriter(clientSocket.getOutputStream(), true);
 		
-        BufferedReader inBuffer = 
-          new BufferedReader(new
-          InputStreamReader(clientSocket.getInputStream())); 
+        BufferedReader inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
 
         // Initialize user input stream
         String line; 
-        BufferedReader inFromUser = 
-        new BufferedReader(new InputStreamReader(System.in)); 
+        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
 
-        // Get user input and send to the server
-        System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");
-        line = inFromUser.readLine(); 
-        
-        //Activate a PlayWAV thread to play the song
-        new Thread(new PlayWAV(clientSocket)).start();
+        //Assign the audio player to the current client
+        PlayWAV player = new PlayWAV(clientSocket);
         
         
-        //TODO Continue with Client execution (prompting new commands)
+        
+        while(true){
+        	
+        	// Get user input and send to the server
+            System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");
+            line = inFromUser.readLine(); 
+            
+            //TODO allow specification of song
+            if(line.contains("play")){
+            	//Activate a PlayWAV thread to play the song
+                new Thread(player).start();
+            }
+            
+            else if(line.contains("resume")){
+            	player.resumeAudio();
+            }
+            
+            else if(line.contains("pause")){
+            	//TODO implement code to stop playback
+            	player.pauseAudio();
+            }
+            else if(line.contains("terminate"))
+            {
+            	break;
+            }
+            
+            //TODO Continue with Client execution (prompting new commands)
+        }
+        
         
         System.out.println("Client: END");
         
@@ -60,14 +80,20 @@ public class TCPClient2 {
 }
 
 
-//This class handles the playing of the audio file
+/**
+ * This class handles both the streaming and the playing of the audio file
+ */
 class PlayWAV extends Thread{
 	
 	//holds a copy of the current client socket
 	private Socket clientSocketWAV;
+	private SourceDataLine sdline;
+	private boolean isPlaying;
 	
 	public PlayWAV(Socket sock){
 		this.clientSocketWAV = sock; 
+		isPlaying = false;
+		sdline = null;
 	}
 	
 	// The parent thread.
@@ -90,10 +116,29 @@ class PlayWAV extends Thread{
         this.parent = parent;
     }
     
-    
-    //run method (Where the audio can be played)
-    public void run(){
+    /**
+     * Pauses the playback of audio
+     */
+    public void pauseAudio(){
     	
+    	if(isPlaying) //check that the audio needs to be paused
+    		isPlaying = false;
+    }
+    
+    /**
+     * Resumes audio playback
+     */
+    public void resumeAudio(){
+    	if(!isPlaying) //check that the audio is not already paused
+    		isPlaying = true;
+    }
+    
+    
+    /**
+     * Controls the actual streaming and playback of the audio
+     */
+    public void run(){
+    	isPlaying = true;
     	AudioInputStream din = null;
         
         try{
@@ -113,7 +158,7 @@ class PlayWAV extends Thread{
  					false);
  			din = AudioSystem.getAudioInputStream(decodedFormat, ais);
  			DataLine.Info info = new DataLine.Info(SourceDataLine.class, decodedFormat);
- 			SourceDataLine sdline = (SourceDataLine) AudioSystem.getLine(info);
+ 			sdline = (SourceDataLine) AudioSystem.getLine(info);
  			
  			if(sdline != null) {
  				sdline.open(decodedFormat);
@@ -123,8 +168,18 @@ class PlayWAV extends Thread{
  				
  				int nBytesRead;
  				while ((nBytesRead = din.read(data, 0, data.length)) != -1) {	
- 				
+
+ 					while(!isPlaying)
+ 					{
+ 					  try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+ 					}
+ 					
  					sdline.write(data, 0, nBytesRead); 
+ 					
  				}
  				System.out.println("exited loop");
  				// Stop
