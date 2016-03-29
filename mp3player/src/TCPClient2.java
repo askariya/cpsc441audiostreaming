@@ -41,18 +41,33 @@ public class TCPClient2 {
         //Assign the audio player to the current client
         PlayWAV player = new PlayWAV(clientSocket);
         
-        
+     
+        /**************************Start of actual implementation*********************/
         
         while(true){
-        	
         	// Get user input and send to the server
             System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");
-            line = inFromUser.readLine(); 
-            
+            line = inFromUser.readLine();
+        	
+        	//split command into two parts (at the space)
+        	String[] splitCmd = line.split(" ", 2);
+        	
             //TODO allow specification of song
-            if(line.contains("play")){
+            if(splitCmd[0].contains("play")){
+            	
+            	outBuffer.println(line);
+            	String response = inBuffer.readLine();
             	//Activate a PlayWAV thread to play the song
-                new Thread(player).start();
+                
+            	if(response.equals("song available")){
+            		new Thread(player).start();
+            	}
+            	else if(response.equals("song unavailable")){
+            		System.out.println("That song does not exist!");
+            	}
+            	else if(response.equals("invalid command")){
+            		System.out.println("Invalid use of the 'play' command!");
+            	}
             }
             
             else if(line.contains("resume")){
@@ -63,17 +78,17 @@ public class TCPClient2 {
             	//TODO implement code to stop playback
             	player.pauseAudio();
             }
-            else if(line.contains("terminate"))
-            {
-            	break;
-            }
             
             //TODO Continue with Client execution (prompting new commands)
+            
+            else if(line.contains("logout")){
+            	break;
+            }
         }
         
         
         System.out.println("Client: END");
-        
+        player.closeAudioInputStream();
         
     }
 	
@@ -88,7 +103,8 @@ class PlayWAV extends Thread{
 	//holds a copy of the current client socket
 	private Socket clientSocketWAV;
 	private SourceDataLine sdline;
-	private boolean isPlaying;
+	private volatile boolean isPlaying;
+	private AudioInputStream din;
 	
 	public PlayWAV(Socket sock){
 		this.clientSocketWAV = sock; 
@@ -134,12 +150,20 @@ class PlayWAV extends Thread{
     }
     
     
+    public void closeAudioInputStream(){
+    	try {
+			din.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
     /**
      * Controls the actual streaming and playback of the audio
      */
     public void run(){
     	isPlaying = true;
-    	AudioInputStream din = null;
+    	din = null;
         
         try{
         	//Read the audio from the server
@@ -181,12 +205,10 @@ class PlayWAV extends Thread{
  					sdline.write(data, 0, nBytesRead); 
  					
  				}
- 				System.out.println("exited loop");
  				// Stop
  				sdline.drain();
  				sdline.stop();
  				sdline.close();
- 				din.close();
  			}
  		
         }catch(IOException | LineUnavailableException | UnsupportedAudioFileException e) //all the possible exceptions

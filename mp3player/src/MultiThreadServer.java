@@ -11,8 +11,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -44,24 +46,68 @@ public class MultiThreadServer implements Runnable {
    /**
     * Run method for the multithreaded Server
     */
-   public void run() {
+   public void run(){
+	try{   
+	   PrintWriter outBuffer = new PrintWriter(clientSocket.getOutputStream(), true);
+	   BufferedReader inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+	   String line = "";
 	   
-	   streamAudio();
+	   while(true){
+		   
+		   line = inBuffer.readLine();
+		   
+		   if(line != null){
+			   System.out.println("Client @ Port #"+ clientSocket.getPort() +": "+ line);
+			   String[] splitCmd = line.split(" ", 2);
+			   
+			   
+			   /** Play Command
+			    * 
+			    * Format: PLAY <SONG_NAME> 
+			    */
+			   if(splitCmd[0].equals("play"))
+			   {
+				   if(splitCmd.length == 1)
+	               {
+					   System.out.println("invalid command");
+					   outBuffer.println("invalid command");
+	               }
+				   else{
+					   String fileName = splitCmd[1];
+					   
+					   if(checkFileExists(fileName)){
+						   System.out.println("song available");
+						   outBuffer.println("song available");
+						   streamAudio(fileName);   
+					   }
+					   else{
+						   outBuffer.println("song unavailable");   
+					   }
+				   }
+				   
+			   } // end of PLAY
+			   
+			   else if(line.equals("logout")){
+				   break;   
+			   }
+		   }
+		   
+		   
+	   } //end of while loop
 	   
-	   try {
-		clientSocket.close();
+		 //  clientSocket.close();   
 	   }catch (IOException e) {
 		   e.printStackTrace();
-		} 
+		   } 
 	   
 	   System.out.println("Server: End");
   }
    
    
-  public void streamAudio(){
+  public void streamAudio(String fileName){
 	   try{
 		   
-		   FileInputStream in = new FileInputStream("king_rat.wav");
+		   FileInputStream in = new FileInputStream(fileName);
 		   
 		   OutputStream out = clientSocket.getOutputStream(); //get the output stream to the client
 		   byte buffer[] = new byte[8192];
@@ -73,8 +119,30 @@ public class MultiThreadServer implements Runnable {
 		   System.out.println(e);
 	   }
   }
+  
+  
+  public boolean checkFileExists(String fileName) throws IOException
+  {
+      String filePath = System.getProperty("user.dir");
+      File folder = new File(filePath);
+      File[] listOfFiles = folder.listFiles();
+      // Send each file name in server directory
+      for (int i = 0; i < listOfFiles.length; i++)
+      {
+    	  //check that the file exists
+          if (listOfFiles[i].isFile() && listOfFiles[i].getName().equals(fileName))
+          {
+              return true;
+          }
+      }
+      
+      return false;
+  }
    
    
+  
+  
+  
 }
 
 
