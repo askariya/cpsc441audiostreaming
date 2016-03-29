@@ -20,11 +20,11 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-public class MultiThreadServer implements Runnable {
+public class MTServer implements Runnable {
    Socket clientSocket;
    
    
-   MultiThreadServer(Socket csocket) {
+   MTServer(Socket csocket) {
       this.clientSocket = csocket;
    }
 
@@ -39,7 +39,7 @@ public class MultiThreadServer implements Runnable {
       while (true) {
          Socket sock = serverSocket.accept();
          System.out.println("Connected to client at Port #" + sock.getPort());
-         new Thread(new MultiThreadServer(sock)).start();
+         new Thread(new MTServer(sock)).start();
       }
    }
    

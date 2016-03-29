@@ -16,7 +16,7 @@ import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 
-public class TCPClient2 {
+public class MTClient {
 
 	public static void main(String args[]) throws Exception 
     { 
@@ -52,14 +52,16 @@ public class TCPClient2 {
         	//split command into two parts (at the space)
         	String[] splitCmd = line.split(" ", 2);
         	
-            //TODO allow specification of song
+            /**
+             * PLAY Command
+             */
             if(splitCmd[0].contains("play")){
             	
             	outBuffer.println(line);
             	String response = inBuffer.readLine();
-            	//Activate a PlayWAV thread to play the song
                 
             	if(response.equals("song available")){
+            		//Activate a PlayWAV thread to play the song
             		new Thread(player).start();
             	}
             	else if(response.equals("song unavailable")){
@@ -70,10 +72,16 @@ public class TCPClient2 {
             	}
             }
             
+            /**
+             * RESUME command
+             */
             else if(line.contains("resume")){
             	player.resumeAudio();
             }
             
+            /**
+             * PAUSE command
+             */
             else if(line.contains("pause")){
             	//TODO implement code to stop playback
             	player.pauseAudio();
@@ -85,11 +93,9 @@ public class TCPClient2 {
             	break;
             }
         }
-        
-        
-        System.out.println("Client: END");
+         
         player.closeAudioInputStream();
-        
+        System.out.println("Client: END");
     }
 	
 }
