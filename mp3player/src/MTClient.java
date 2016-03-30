@@ -39,30 +39,33 @@ public class MTClient {
         BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
 
         //Assign the audio player to the current client
-        PlayWAV player = new PlayWAV(clientSocket);
-        
-     
+        PlayWAV player = new PlayWAV(clientSocket);     
         /**************************Start of actual implementation*********************/
         
         while(true){
         	// Get user input and send to the server
             System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");
             line = inFromUser.readLine();
-        	
+        	if(player.threadOver){
+        		System.out.println("IT's DEAD");
+        		player.interrupt();
+        	}
         	//split command into two parts (at the space)
         	String[] splitCmd = line.split(" ", 2);
         	
             /**
              * PLAY Command
              */
-            if(splitCmd[0].contains("play")){
-            	
+            if(splitCmd[0].contains("play") && player.audioStopped()){
             	outBuffer.println(line);
             	String response = inBuffer.readLine();
                 
+            	System.out.println("Server Response: " + response);
+            	
             	if(response.equals("song available")){
             		//Activate a PlayWAV thread to play the song
-            		new Thread(player).start();
+            		player = new PlayWAV(clientSocket);
+            		player.start();
             	}
             	else if(response.equals("song unavailable")){
             		System.out.println("That song does not exist!");
@@ -73,30 +76,66 @@ public class MTClient {
             }
             
             /**
-             * RESUME command
+             * RESUME Command
              */
-            else if(line.contains("resume")){
+            else if(line.contains("resume") && !player.audioStopped()){
+            	System.out.println("Resuming Playback...");
             	player.resumeAudio();
             }
             
             /**
-             * PAUSE command
+             * PAUSE Command
              */
-            else if(line.contains("pause")){
-            	//TODO implement code to stop playback
+            else if(line.contains("pause") && !player.audioStopped()){
+            	System.out.println("Paused Playback...");
             	player.pauseAudio();
             }
             
             //TODO Continue with Client execution (prompting new commands)
             
+            
+            /**
+             * STOP Command
+             */
+            else if(line.contains("stop") ){
+            	
+            	System.out.println(player.audioStopped()); //TODO delete this
+            	
+            	if(!player.audioStopped())             	{
+            		player.stopAudio();//stop audio playback
+                	outBuffer.println(line); //send the stop command to the server
+            	}
+            	
+            }
+            
+            
+            else if(line.contains("list")){
+            	outBuffer.println("list");
+            	
+            	System.out.println("\n-----------SONGS AVAILABLE-------------\n");
+            	String response;
+            	while(!(response = inBuffer.readLine()).equals("eof")){
+            		System.out.println(response); //print file names to the user
+            	}
+            	System.out.println("\n");
+            }
+            
+            
+            
+            /**
+             * Disconnects the client from the server
+             */
             else if(line.contains("logout")){
+            	outBuffer.println("logout");
             	break;
             }
         }
          
-        player.closeAudioInputStream();
         System.out.println("Client: END");
-    }
+        clientSocket.close();
+    }// END OF MAIN
+	
+	
 	
 }
 
@@ -104,18 +143,21 @@ public class MTClient {
 /**
  * This class handles both the streaming and the playing of the audio file
  */
-class PlayWAV extends Thread{
+class PlayWAV extends Thread {
 	
 	//holds a copy of the current client socket
 	private Socket clientSocketWAV;
 	private SourceDataLine sdline;
-	private volatile boolean isPlaying;
+	private volatile boolean isPlaying, stopped;
 	private AudioInputStream din;
+	public Boolean threadOver;
 	
 	public PlayWAV(Socket sock){
 		this.clientSocketWAV = sock; 
 		isPlaying = false;
+		stopped = true;
 		sdline = null;
+		threadOver = false;
 	}
 	
 	// The parent thread.
@@ -155,13 +197,13 @@ class PlayWAV extends Thread{
     		isPlaying = true;
     }
     
+    public void stopAudio(){
+    		sdline.close();
+    		stopped = true;
+    }
     
-    public void closeAudioInputStream(){
-    	try {
-			din.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    public boolean audioStopped(){
+    	return stopped;
     }
     
     /**
@@ -169,6 +211,7 @@ class PlayWAV extends Thread{
      */
     public void run(){
     	isPlaying = true;
+    	stopped = false;
     	din = null;
         
         try{
@@ -181,7 +224,7 @@ class PlayWAV extends Thread{
             //EXTERNAL CODE (Playing the audio) 
             //ONLY works properly for .wav files
             AudioFormat baseFormat = ais.getFormat();
- 			AudioFormat decodedFormat = new AudioFormat(
+		AudioFormat decodedFormat = new AudioFormat(
  					AudioFormat.Encoding.PCM_SIGNED,
  					baseFormat.getSampleRate(), 16, baseFormat.getChannels(),
  					baseFormat.getChannels() * 2, baseFormat.getSampleRate(),
@@ -197,31 +240,31 @@ class PlayWAV extends Thread{
  				sdline.start();
  				
  				int nBytesRead;
- 				while ((nBytesRead = din.read(data, 0, data.length)) != -1) {	
+ 				while (((nBytesRead = din.read(data, 0, data.length)) != -1)) {	
 
  					while(!isPlaying)
  					{
  					  try {
 						Thread.sleep(1000);
-					} catch (InterruptedException e) {
+ 					  } catch (InterruptedException e) {
 						e.printStackTrace();
-					}
+ 					  }
  					}
  					
  					sdline.write(data, 0, nBytesRead); 
- 					
  				}
- 				// Stop
  				sdline.drain();
  				sdline.stop();
  				sdline.close();
+// 				din.close();
  			}
  		
         }catch(IOException | LineUnavailableException | UnsupportedAudioFileException e) //all the possible exceptions
         {
         	System.out.println(e);
         }
-//        
+        System.out.println("leaving thread");
+        threadOver = true;
     }
     
 }
