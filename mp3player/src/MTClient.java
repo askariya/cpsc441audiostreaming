@@ -97,7 +97,7 @@ public class MTClient {
             /**
              * STOP Command
              */
-            else if(line.contains("stop") ){
+            else if(line.equals("stop") ){
             	
             	System.out.println(player.audioStopped()); //TODO delete this
             	
@@ -109,7 +109,7 @@ public class MTClient {
             }
             
             
-            else if(line.contains("list")){
+            else if(line.equals("list")){
             	outBuffer.println("list");
             	
             	System.out.println("\n-----------SONGS AVAILABLE-------------\n");
