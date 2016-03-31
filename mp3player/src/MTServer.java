@@ -8,24 +8,20 @@
 //TODO implement 'next' function
 //TODO implement Playlists
 
-
+import java.util.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 public class MTServer implements Runnable {
    Socket clientSocket;
-   
+   List <User> users; // A List of the users connecting to the Server
    
    MTServer(Socket csocket) {
       this.clientSocket = csocket;
@@ -33,7 +29,7 @@ public class MTServer implements Runnable {
 
    
    public static void main(String args[]) throws Exception {
-      
+	  //loadUsers();
 	  ServerSocket serverSocket = new ServerSocket(9001);
       System.out.println("Listening");
       
@@ -168,8 +164,35 @@ public class MTServer implements Runnable {
 	      }
 	      String eof = "eof";
 	      outBuffer.println(eof);
-      
-  }
+	      
+	}
+	
+	/**
+	 * TODO documentation here
+	 * @throws IOException
+	 */
+	public void loadUsers() throws IOException
+	{
+      String filePath = System.getProperty("user.dir");
+      File folder = new File(filePath);
+      File[] listOfFiles = folder.listFiles();
+      // Send each file name in server directory
+      for (int i = 0; i < listOfFiles.length; i++)
+      {
+          if (listOfFiles[i].isFile() && listOfFiles[i].getName().matches("^USER-.+"))
+          {
+              User tempuser = new User(listOfFiles[i].getName().substring(5));
+              tempuser.loadAccountData();
+              users.add(tempuser);
+          }
+      }
+      // Add default admin and user
+       User admin = new User("admin", "pass", "admin");
+       User freshuser = new User("user", "pass", "user");
+       users.add(admin);
+       users.add(freshuser);
+       
+	}
    
    
   

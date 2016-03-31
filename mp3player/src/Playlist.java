@@ -1,12 +1,12 @@
 import java.util.ArrayList;
 
-
 public class Playlist {
-	
+	private String playlistName;
 	private ArrayList<String> playlistArray;
 	
-	public Playlist(){
-		playlistArray = new ArrayList<String>();
+	public Playlist(String name){
+		this.playlistName = name;
+		this.playlistArray = new ArrayList<String>();
 	}
 	
 	/**
@@ -40,6 +40,23 @@ public class Playlist {
 	 */
 	public String getSong(int i){
 		return playlistArray.get(i);
+	}
+
+	public String exportAllSongs(){
+		String allSongs = "PLAYLIST:" + playlistName + "\0";
+			for (String s : playlistArray)
+			{
+				allSongs += s + "\0";
+			}
+
+		return allSongs;
+	}
+
+		public void importAllSongs(String allsongs){
+		String allSongs = "PLAYLIST:" + playlistName + "\0";
+			for (String song: allSongs.split("\0")){
+         this.addSong(song);
+      }
 	}
 	
 	/**

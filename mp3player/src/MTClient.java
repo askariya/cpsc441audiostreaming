@@ -9,7 +9,6 @@ import java.net.Socket;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
@@ -256,7 +255,8 @@ class PlayWAV extends Thread {
  				sdline.drain();
  				sdline.stop();
  				sdline.close();
-// 				din.close();
+ 				stopped = true;
+ 				//din.close();
  			}
  		
         }catch(IOException | LineUnavailableException | UnsupportedAudioFileException e) //all the possible exceptions
