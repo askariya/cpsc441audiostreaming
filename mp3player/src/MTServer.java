@@ -25,7 +25,7 @@ import java.nio.channels.SocketChannel;
 
 public class MTServer implements Runnable {
    Socket clientSocket;
-   List <User> users;
+   List <User> users; // A List of the users connecting to the Server
    
    MTServer(Socket csocket) {
       this.clientSocket = csocket;
@@ -168,11 +168,15 @@ public class MTServer implements Runnable {
 	      }
 	      String eof = "eof";
 	      outBuffer.println(eof);
-      
-  }
-
-    public void loadUsers() throws IOException
-  {
+	      
+	}
+	
+	/**
+	 * TODO documentation here
+	 * @throws IOException
+	 */
+	public void loadUsers() throws IOException
+	{
       String filePath = System.getProperty("user.dir");
       File folder = new File(filePath);
       File[] listOfFiles = folder.listFiles();
@@ -191,7 +195,8 @@ public class MTServer implements Runnable {
        User freshuser = new User("user", "pass", "user");
        users.add(admin);
        users.add(freshuser);
-   }
+       
+	}
    
    
   
