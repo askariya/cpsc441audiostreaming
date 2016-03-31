@@ -255,8 +255,7 @@ class PlayWAV extends Thread {
  				sdline.drain();
  				sdline.stop();
  				sdline.close();
- 				stopped = true;
-// 				din.close();
+ 				//din.close();
  			}
  		
         }catch(IOException | LineUnavailableException | UnsupportedAudioFileException e) //all the possible exceptions
