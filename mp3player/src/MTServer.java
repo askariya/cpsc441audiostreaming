@@ -25,7 +25,7 @@ import java.nio.channels.SocketChannel;
 
 public class MTServer implements Runnable {
    Socket clientSocket;
-   
+   User[] users;
    
    MTServer(Socket csocket) {
       this.clientSocket = csocket;
@@ -33,7 +33,13 @@ public class MTServer implements Runnable {
 
    
    public static void main(String args[]) throws Exception {
-      
+    //Load users from filenames starting with "USER-"
+    // Count files with that prefix
+    // users = new User[that num of files]
+    // for each file
+    //		User tempuser = new User(filename wo/ prefix)
+    //		tempuser.loadAccountData();
+
 	  ServerSocket serverSocket = new ServerSocket(9001);
       System.out.println("Listening");
       

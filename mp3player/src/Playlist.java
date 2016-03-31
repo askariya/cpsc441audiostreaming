@@ -2,11 +2,12 @@ import java.util.ArrayList;
 
 
 public class Playlist {
-	
+	private String playlistName;
 	private ArrayList<String> playlistArray;
 	
-	public Playlist(){
-		playlistArray = new ArrayList<String>();
+	public Playlist(String name){
+		this.playlistName = name;
+		this.playlistArray = new ArrayList<String>();
 	}
 	
 	/**
