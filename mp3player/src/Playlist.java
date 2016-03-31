@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-
+import java.util.*;
 
 public class Playlist {
 	private String playlistName;
@@ -41,6 +41,23 @@ public class Playlist {
 	 */
 	public String getSong(int i){
 		return playlistArray.get(i);
+	}
+
+	public String exportAllSongs(){
+		String allSongs = "PLAYLIST:" + playlistName + "\0";
+			for (String s : playlistArray)
+			{
+				allSongs += s + "\0";
+			}
+
+		return allSongs;
+	}
+
+		public void importAllSongs(String allsongs){
+		String allSongs = "PLAYLIST:" + playlistName + "\0";
+			for (String song: allSongs.split("\0")){
+         this.addSong(song);
+      }
 	}
 	
 	/**
