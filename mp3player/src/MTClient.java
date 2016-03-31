@@ -255,6 +255,7 @@ class PlayWAV extends Thread {
  				sdline.drain();
  				sdline.stop();
  				sdline.close();
+ 				stopped = true;
  				//din.close();
  			}
  		
