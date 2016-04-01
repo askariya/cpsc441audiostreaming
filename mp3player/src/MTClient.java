@@ -41,7 +41,7 @@ public class MTClient {
         PlayWAV player = new PlayWAV(clientSocket);     
         
         
-        promptAuthentication(inFromUser, inBuffer, outBuffer);
+//      promptAuthentication(inFromUser, inBuffer, outBuffer);
         
         /********************************************COMMAND PROMPT************************************************/
         

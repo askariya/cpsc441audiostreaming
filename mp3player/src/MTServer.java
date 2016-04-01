@@ -5,8 +5,10 @@
  * http://www.tutorialspoint.com/javaexamples/net_multisoc.htm * 
  * 
  */
+
 //TODO implement 'next' function
 //TODO implement Playlists
+//TODO implement removing and adding songs (ADMIN)
 
 import java.util.*;
 import java.io.BufferedReader;
@@ -21,11 +23,14 @@ import java.net.Socket;
 
 public class MTServer implements Runnable {
    Socket clientSocket;
+   
    private static List <User> users; // A List of the users connecting to the Server
-    
+   private User currentUser; // the current User
+   boolean isAdmin;
    
    MTServer(Socket csocket) {
       this.clientSocket = csocket;
+      isAdmin = false; //false by default
    }
 
    
@@ -42,6 +47,7 @@ public class MTServer implements Runnable {
       System.out.println("Listening");
       
       users = new ArrayList<User>(); // initialize a static list of users
+      
       //TODO load the user information here
       
       //while the server is running, keep accepting connections from TCP clients (if any are available)
@@ -56,13 +62,14 @@ public class MTServer implements Runnable {
     * Run method for the multithreaded Server
     */
    public void run(){
+
 	   try{   
 		   PrintWriter outBuffer = new PrintWriter(clientSocket.getOutputStream(), true);
 		   BufferedReader inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		   String line = "";
 		   StreamAudio streamer = null;
 
-		   authenticateUser(inBuffer, outBuffer);
+//		   authenticateUser(inBuffer, outBuffer);
 		   
 		   
 		   while(true){
@@ -280,14 +287,6 @@ public class MTServer implements Runnable {
 	  
 	  while(!authenticated) 
       {
-		  /*TODO Implement a login here
-		    * 
-		    * Prompt for username and password
-		    * Check if it already exists
-		    * If not; allow creation
-		    * User x = new User("sss");
-		    * users.add(x);
-		   */
 		   String userpass = "";
 		   
 		   while(userpass.equals(""))
@@ -312,14 +311,18 @@ public class MTServer implements Runnable {
 			   String password = splitAuth[1];
 			   
 			   /*TODO Check authentication
+			    * 
 			    * check the username and password against stored users
+			    * 
 			    * determine account type and privileges
-			    * create a User variable that can be used for command verification
+			    * 
+			    * initialize the User variable (currentUser)
 			    * 
 			    * if username and password are valid: outBuffer.println("authenticated")
 			    * outBuffer.println("authenticated");
 			    * authenticated = true;
 			    * 
+			    * if user is an admin --> isAdmin = true;
 			    * 
 			    * otherwise: out.println("invalid entry")
 			    */
