@@ -123,9 +123,9 @@ public class MTServer implements Runnable {
 		             * CREATE_PLAYLIST
 		             * create and name a playlist
 		             */
-		            else if(splitCmd[0].equals("create_playlist")){
-		            	
-		            	if((splitCmd.length != 2))
+				   else if(splitCmd[0].equals("create_playlist")){
+					   
+					   if((splitCmd.length != 2))
 		            	{
 		            		System.out.println("invalid command");
 		            		outBuffer.println("invalid command"); //send error back to client
@@ -147,15 +147,45 @@ public class MTServer implements Runnable {
 		            		System.out.println("valid playlist name");
 		            		outBuffer.println("valid playlist name"); //send verification back to Client
 		            	}
-		            }
+				   }
+				   
+				   /**
+				    * REMOVE_PLAYLIST
+				    * remove a user's playlist
+				    */
+				   else if(splitCmd[0].equals("remove_playlist")){
+					   
+					   if((splitCmd.length != 2))
+					   {
+						   System.out.println("invalid command");
+		            	   outBuffer.println("invalid command"); //send error back to client
+		            	   
+					   }
+		               else if(splitCmd[1].length() < 1)
+		               {
+		            	   System.out.println("invalid command");
+		            	   outBuffer.println("invalid command"); //send error back to client
+		            	   
+		               }
+		               else{
+		            	   String playlistName = splitCmd[1]; // read the playlist name 
+		            		
+		            		//TODO Remove from list of Playlists
+		            		//currentUser.removeFromListOfPlaylists(p)
+		            	   
+		            	   System.out.println("valid playlist name");
+		            	   outBuffer.println("valid playlist name"); //send verification back to Client
+		            	}
+					   
+				   }
 				   
 				   /**
 		             * ADD_TO_PLAYLIST
 		             * Adds a song to a playlist
 		             */
-		            else if(splitCmd[0].equals("add_to_playlist")){
-		            	
-		            	if(splitCmd.length != 3)
+				   else if(splitCmd[0].equals("add_to_playlist")){
+					   
+					   if(splitCmd.length != 3)
 		            	{
 		            		System.out.println("invalid command");
 		            		outBuffer.println("invalid command");
@@ -186,7 +216,6 @@ public class MTServer implements Runnable {
 		            		
 		            		
 		            	}
-		            	
 		            }//End of add_to_playlist
 		            
 				   /**

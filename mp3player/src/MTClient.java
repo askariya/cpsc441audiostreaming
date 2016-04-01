@@ -144,6 +144,28 @@ public class MTClient {
             }
             
             /**
+             * REMOVE_PLAYLIST <playlist name>
+             * remove a playlist
+             */
+            else if(splitCmd[0].equals("remove_playlist") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("valid playlist name"))
+                {
+                	System.out.println("Playlist " + splitCmd[1] + " removed");
+                }
+            	
+            	else if(response.equals("invalid command"))
+                {
+                	System.out.println("Invalid command: remove_playlist <playlist name>");
+                }
+            }
+            
+            
+            /**
              * ADD_TO_PLAYLIST <song> <playlist>  
              */
             else if(splitCmd[0].equals("add_to_playlist") && player.audioStopped()){

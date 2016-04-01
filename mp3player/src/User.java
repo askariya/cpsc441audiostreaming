@@ -91,5 +91,44 @@ public class User {
 	public void addToListOfPlaylists(Playlist p){
 		listOfPlaylists.add(p);
 	}
+	
+	/**
+	 * Removes a playlist from the user-specific list of playlists
+	 * @param p
+	 */
+	public void removeFromListOfPlaylists(Playlist p){
+		
+		int plIndex = searchListOfPlaylists(p);
+		
+		if(plIndex == -1)
+		{
+			System.out.println("Playlist does not exist!");
+		}
+		else{
+			listOfPlaylists.remove(plIndex); //remove the playlist
+		}
+			
+	}
+	
+	
+	/**
+	 * A method that searches the user's list of playlists
+	 * @param p
+	 * @return
+	 */
+	public int searchListOfPlaylists(Playlist p){
+		
+		String playlistName = p.getName();
+		for(int i = 0;i <  listOfPlaylists.size(); i++){
+			
+			//if the playlist exists in the array 
+			if(playlistName.equals(listOfPlaylists.get(i).getName())){
+				return i; //return the index of the playlist
+			}
+		}
+		
+		return -1;
+	}
+	
 
 }

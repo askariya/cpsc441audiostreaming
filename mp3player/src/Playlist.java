@@ -10,6 +10,15 @@ public class Playlist {
 	}
 	
 	/**
+	 * Gets the name of the playlist
+	 * @return String of playlist name
+	 */
+	public String getName(){
+		return playlistName;
+	}
+	
+	
+	/**
 	 * Adds a song to the playlist
 	 * @param songName
 	 */
