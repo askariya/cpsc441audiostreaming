@@ -82,5 +82,14 @@ public class User {
 			   e.printStackTrace();
 			   } 
 	}
+	
+	
+	/**
+	 * Adds a playlist to the user-specific list of playlists
+	 * @param p
+	 */
+	public void addToListOfPlaylists(Playlist p){
+		listOfPlaylists.add(p);
+	}
 
 }

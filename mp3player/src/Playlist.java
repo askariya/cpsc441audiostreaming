@@ -2,11 +2,11 @@ import java.util.ArrayList;
 
 public class Playlist {
 	private String playlistName;
-	private ArrayList<String> playlistArray;
+	private ArrayList<String> songArray;
 	
 	public Playlist(String name){
 		this.playlistName = name;
-		this.playlistArray = new ArrayList<String>();
+		this.songArray = new ArrayList<String>();
 	}
 	
 	/**
@@ -14,7 +14,7 @@ public class Playlist {
 	 * @param songName
 	 */
 	public void addSong(String songName){
-		playlistArray.add(songName);
+		songArray.add(songName);
 	}
 	
 	
@@ -29,7 +29,7 @@ public class Playlist {
 		if(songIndex == -1)
 			System.out.println("Song not in playlist");
 		else{
-			playlistArray.remove(songIndex);
+			songArray.remove(songIndex);
 		}
 	}
 	
@@ -39,12 +39,12 @@ public class Playlist {
 	 * @return
 	 */
 	public String getSong(int i){
-		return playlistArray.get(i);
+		return songArray.get(i);
 	}
 
 	public String exportAllSongs(){
 		String allSongs = "PLAYLIST:" + playlistName + "\0";
-			for (String s : playlistArray)
+			for (String s : songArray)
 			{
 				allSongs += s + "\0";
 			}
@@ -65,9 +65,9 @@ public class Playlist {
 	 */
 	public int searchPlaylist(String songName){
 		
-		for(int i = 0; i < playlistArray.size(); i++){
+		for(int i = 0; i < songArray.size(); i++){
 			
-			if(playlistArray.get(i).equals(songName)){
+			if(songArray.get(i).equals(songName)){
 				return i;
 			}
 		}

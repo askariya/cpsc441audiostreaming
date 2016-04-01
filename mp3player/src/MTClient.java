@@ -55,7 +55,7 @@ public class MTClient {
             /**
              * PLAY Command
              */
-            if(splitCmd[0].contains("play") && player.audioStopped()){
+            if(splitCmd[0].equals("play") && player.audioStopped()){
             	outBuffer.println(line);
             	String response = inBuffer.readLine();
                 
@@ -77,7 +77,7 @@ public class MTClient {
             /**
              * RESUME Command
              */
-            else if(line.contains("resume") && !player.audioStopped()){
+            else if(line.contains("resume") && !player.isPlaying()){
             	System.out.println("Resuming Playback...");
             	player.resumeAudio();
             }
@@ -85,7 +85,7 @@ public class MTClient {
             /**
              * PAUSE Command
              */
-            else if(line.contains("pause") && !player.audioStopped()){
+            else if(line.contains("pause") && player.isPlaying()){
             	System.out.println("Paused Playback...");
             	player.pauseAudio();
             }
@@ -96,7 +96,7 @@ public class MTClient {
             /**
              * STOP Command
              */
-            else if(line.equals("stop") ){
+            else if(line.equals("stop")){
             	
             	System.out.println(player.audioStopped()); //TODO delete this
             	
@@ -107,7 +107,9 @@ public class MTClient {
             	
             }
             
-            
+            /**
+             * LIST Command
+             */
             else if(line.equals("list")){
             	outBuffer.println("list");
             	
@@ -117,6 +119,23 @@ public class MTClient {
             		System.out.println(response); //print file names to the user
             	}
             	System.out.println("\n");
+            }
+            
+            /**
+             * CREATE_PLAYLIST
+             * create and name a playlist
+             */
+            else if(splitCmd[0].equals("create_playlist") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid playlist name"))
+                {
+                	System.out.println("Not a valid playlist name");
+                }
+
             }
             
             
@@ -203,6 +222,10 @@ class PlayWAV extends Thread {
     
     public boolean audioStopped(){
     	return stopped;
+    }
+    
+    public boolean isPlaying(){
+    	return isPlaying;
     }
     
     /**

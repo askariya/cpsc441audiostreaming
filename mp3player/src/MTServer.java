@@ -22,6 +22,7 @@ import java.net.Socket;
 public class MTServer implements Runnable {
    Socket clientSocket;
    List <User> users; // A List of the users connecting to the Server
+    
    
    MTServer(Socket csocket) {
       this.clientSocket = csocket;
@@ -69,6 +70,13 @@ public class MTServer implements Runnable {
 						   System.out.println("invalid command");
 						   outBuffer.println("invalid command");
 		               }
+					   
+					   else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+					   
 					   else{
 						   String fileName = splitCmd[1];
 						   
@@ -90,18 +98,53 @@ public class MTServer implements Runnable {
 				   /** Stop command
 				    * Format: STOP 
 				    */
-				   else if(line.contains("stop")){
+				   else if(line.equals("stop")){
 					   streamer.emptyBuffer();
-					   
 				   }
 				   
 				   
 				   /**List command
 				    * Format: LIST 
 				    */
-				   else if(line.contains("list")){
+				   else if(line.equals("list")){
 					   listSongs(clientSocket, outBuffer);
 				   }
+				   
+				   
+				   
+				   /**
+		             * CREATE_PLAYLIST
+		             * create and name a playlist
+		             */
+		            else if(splitCmd[0].equals("create_playlist")){
+		            	
+		            	if((splitCmd.length == 1))
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+		            	
+		            	else{
+		            		String playlistName = splitCmd[1]; // read the playlist name 
+		            		Playlist p = new Playlist(playlistName); //create new Playlist object
+		            		
+		            		//TODO add to list of Playlists
+		            		//currentUser.addToListOfPlaylists(p)
+		            		
+		            		
+		            		System.out.println("valid playlist name");
+		            		outBuffer.println("valid playlist name"); //send verification back to Client
+		            	}
+		            }
+				   
+				   
+				   
+				   
 				   
 				   /** Logout command
 				    *  Format: LOGOUT
@@ -167,10 +210,7 @@ public class MTServer implements Runnable {
 	      
 	}
 	
-	/**
-	 * TODO documentation here
-	 * @throws IOException
-	 */
+
 	public void loadUsers() throws IOException
 	{
       String filePath = System.getProperty("user.dir");
