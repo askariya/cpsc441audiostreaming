@@ -52,12 +52,21 @@ public class MTServer implements Runnable {
 		   BufferedReader inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		   String line = "";
 		   StreamAudio streamer = null;
+		   
+		   
+		   /*TODO Implement a login here
+		    * 
+		    * Prompt for username and password
+		    * Check if it already exists
+		    * If not; allow creation 
+		   */
+		   
 		   while(true){
 			   
 			   line = inBuffer.readLine();
 			   if(line != null){
 				   System.out.println("Client@Port#"+ clientSocket.getPort() +": "+ line);
-				   String[] splitCmd = line.split(" ", 2);
+				   String[] splitCmd = line.split(" ", 3);
 				   
 				   /** Play Command
 				    * 
@@ -65,7 +74,7 @@ public class MTServer implements Runnable {
 				    */
 				   if(splitCmd[0].equals("play"))
 				   {
-					   if(splitCmd.length == 1)
+					   if(splitCmd.length != 2)
 		               {
 						   System.out.println("invalid command");
 						   outBuffer.println("invalid command");
@@ -82,8 +91,7 @@ public class MTServer implements Runnable {
 						   
 						   if(checkFileExists(fileName)){
 							   System.out.println("song available");
-							   outBuffer.println("song available");
-//							   streamAudio(fileName);   
+							   outBuffer.println("song available");  
 							   streamer = new StreamAudio(fileName,clientSocket);
 							   streamer.start();
 						   }
@@ -111,14 +119,13 @@ public class MTServer implements Runnable {
 				   }
 				   
 				   
-				   
 				   /**
 		             * CREATE_PLAYLIST
 		             * create and name a playlist
 		             */
 		            else if(splitCmd[0].equals("create_playlist")){
 		            	
-		            	if((splitCmd.length == 1))
+		            	if((splitCmd.length != 2))
 		            	{
 		            		System.out.println("invalid command");
 		            		outBuffer.println("invalid command"); //send error back to client
@@ -141,6 +148,72 @@ public class MTServer implements Runnable {
 		            		outBuffer.println("valid playlist name"); //send verification back to Client
 		            	}
 		            }
+				   
+				   /**
+		             * ADD_TO_PLAYLIST
+		             * Adds a song to a playlist
+		             */
+		            else if(splitCmd[0].equals("add_to_playlist")){
+		            	
+		            	if(splitCmd.length != 3)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command");
+		            	}
+		            	else if(splitCmd[1].length() < 1 || splitCmd[2].length() < 1 )
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+		            	
+		            	else{
+		            		String songName = splitCmd[1];
+		            		String playlistName = splitCmd[2];
+		            		
+		            		/*TODO Check that the song and playlist are on the server
+		            		 * Add an && statement that also checks for playlist specific to the User
+		            		 */
+		            		if(checkFileExists(songName)){
+		            			
+		            			//....
+		            			
+		            			System.out.println("valid playlist addition");
+							}
+		            		else{
+		            			outBuffer.println("song or playlist unavailable");
+		            			System.out.println("song or playlist unavailable");
+		            		}
+		            		
+		            		
+		            	}
+		            	
+		            }//End of add_to_playlist
+		            
+				   /**
+		             * REMOVE_FROM_PLAYLIST
+		             * Removes a song from a playlist
+		             */
+		            else if(splitCmd[0].equals("add_to_playlist")){
+		            	
+		            	if(splitCmd.length != 3)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command");
+		            	}
+		            	else if(splitCmd[1].length() < 1 || splitCmd[2].length() < 1 )
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+		            	
+		            	/*TODO Check if the playlist (and song within) exists 
+		            	 * 
+		            	 * Call method to check that the playlist exists for current user
+		            	 * Call method to check that the song exists within the playlist
+		            	 */
+
+		            }
+				   
 				   
 				   
 				   

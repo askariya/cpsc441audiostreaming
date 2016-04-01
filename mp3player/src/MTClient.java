@@ -50,7 +50,7 @@ public class MTClient {
         		player.interrupt();
         	}
         	//split command into two parts (at the space)
-        	String[] splitCmd = line.split(" ", 2);
+        	String[] splitCmd = line.split(" ", 3);
         	
             /**
              * PLAY Command
@@ -70,7 +70,7 @@ public class MTClient {
             		System.out.println("That song does not exist!");
             	}
             	else if(response.equals("invalid command")){
-            		System.out.println("Invalid use of the 'play' command!");
+            		System.out.println("Invalid command: play <song name>");
             	}
             }
             
@@ -122,7 +122,7 @@ public class MTClient {
             }
             
             /**
-             * CREATE_PLAYLIST
+             * CREATE_PLAYLIST <playlist name>
              * create and name a playlist
              */
             else if(splitCmd[0].equals("create_playlist") && player.audioStopped()){
@@ -131,16 +131,69 @@ public class MTClient {
             	String response = inBuffer.readLine();
             	System.out.println("Server Response: " + response);
             	
-            	if(response.equals("invalid playlist name"))
+            	if(response.equals("valid playlist name"))
                 {
-                	System.out.println("Not a valid playlist name");
+                	System.out.println("Playlist " + splitCmd[1] + " created");
+                }
+            	
+            	else if(response.equals("invalid command"))
+                {
+                	System.out.println("Invalid command: create_playlist <playlist name>");
                 }
 
             }
             
+            /**
+             * ADD_TO_PLAYLIST <song> <playlist>  
+             */
+            else if(splitCmd[0].equals("add_to_playlist") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid command")){
+            		System.out.println("invalid command: add_to_playlist <song name> <playlist name>");
+            	}
+            	
+            	else if(response.equals("valid playlist addition")){
+            		System.out.println("Added " + splitCmd[1] + " to " + splitCmd[2]);
+            	}
+            	
+            	else if(response.equals("song or playlist unavailable")){
+            		System.out.println("Song or playlist is unavailable");
+            	}
+            }
+            
+            /**
+             * REMOVE_FROM_PLAYLIST <song> <playlist>  
+             */
+            else if(splitCmd[0].equals("remove_from_playlist") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid command")){
+            		System.out.println("invalid command: remove_from_playlist <song name> <playlist name>");
+            	}
+            	
+            	else if(response.equals("valid playlist removal")){
+            		System.out.println("Removed " + splitCmd[1] + " from " + splitCmd[2]);
+            	}
+            	
+            	else if(response.equals("song or playlist unavailable")){
+            		System.out.println("Song or playlist is unavailable");
+            	}
+            	
+            	
+            }
             
             
             /**
+             * LOGOUT
              * Disconnects the client from the server
              */
             else if(line.contains("logout")){
