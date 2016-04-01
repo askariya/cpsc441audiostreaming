@@ -31,7 +31,14 @@ public class MTServer implements Runnable {
    
    public static void main(String args[]) throws Exception {
 	  //loadUsers();
-	  ServerSocket serverSocket = new ServerSocket(9001);
+	   
+	   if (args.length != 1)
+       {
+           System.out.println("Usage: MTServer <Server Port>");
+           System.exit(1);
+       }
+	   
+	  ServerSocket serverSocket = new ServerSocket(Integer.parseInt(args[0]));
       System.out.println("Listening");
       
       users = new ArrayList<User>(); // initialize a static list of users

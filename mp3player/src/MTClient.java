@@ -21,7 +21,7 @@ public class MTClient {
     { 
         if (args.length != 2)
         {
-            System.out.println("Usage: TCPClient <Server IP> <Server Port>");
+            System.out.println("Usage: MTClient <Server IP> <Server Port>");
             System.exit(1);
         }
 
