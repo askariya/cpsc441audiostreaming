@@ -246,8 +246,6 @@ public class MTServer implements Runnable {
 				   
 				   
 				   
-				   
-				   
 				   /** Logout command
 				    *  Format: LOGOUT
 				    */

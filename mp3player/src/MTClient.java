@@ -41,6 +41,24 @@ public class MTClient {
         PlayWAV player = new PlayWAV(clientSocket);     
         /**************************Start of actual implementation*********************/
         
+        boolean authenticated = false;
+        
+        while(authenticated == false)
+        {
+        	System.out.print("Please enter a username: ");
+            String username = inFromUser.readLine();
+            
+            System.out.print("Please enter a password: ");
+            String password = inFromUser.readLine();
+            
+            outBuffer.println(username + " " + password); //send the user info to the server to be authenticated
+            String response = inBuffer.readLine();
+            
+            if(response.equals("authenticated"))
+            	authenticated = true;
+        }
+        
+        
         while(true){
         	// Get user input and send to the server
             System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");

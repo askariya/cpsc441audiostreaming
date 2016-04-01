@@ -18,12 +18,15 @@ public class User {
 /* User Account Creation */
 	public User(String name){
 		this.userName = name;
+		listOfPlaylists = new ArrayList<Playlist>();
 	}
 
 	public User(String name, String pass, String type){
 		this.userName = name;
 		this.userType = type;
 		this.password = pass;
+		
+		listOfPlaylists = new ArrayList<Playlist>();
 	}
 
 /* Authentication */
