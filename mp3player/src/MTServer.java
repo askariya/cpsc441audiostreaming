@@ -21,7 +21,7 @@ import java.net.Socket;
 
 public class MTServer implements Runnable {
    Socket clientSocket;
-   List <User> users; // A List of the users connecting to the Server
+   private static List <User> users; // A List of the users connecting to the Server
     
    
    MTServer(Socket csocket) {
@@ -34,6 +34,8 @@ public class MTServer implements Runnable {
 	  ServerSocket serverSocket = new ServerSocket(9001);
       System.out.println("Listening");
       
+      users = new ArrayList<User>(); // initialize a static list of users
+      //TODO load the user information here
       
       //while the server is running, keep accepting connections from TCP clients (if any are available)
       while (true) {
@@ -52,13 +54,16 @@ public class MTServer implements Runnable {
 		   BufferedReader inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		   String line = "";
 		   StreamAudio streamer = null;
-		   
+
 		   
 		   /*TODO Implement a login here
 		    * 
 		    * Prompt for username and password
 		    * Check if it already exists
-		    * If not; allow creation 
+		    * If not; allow creation
+		    * User x = new User("sss");
+		    * users.add(x);
+		    
 		   */
 		   
 		   while(true){
