@@ -39,25 +39,11 @@ public class MTClient {
 
         //Assign the audio player to the current client
         PlayWAV player = new PlayWAV(clientSocket);     
-        /**************************Start of actual implementation*********************/
         
-        boolean authenticated = false;
         
-        while(authenticated == false)
-        {
-        	System.out.print("Please enter a username: ");
-            String username = inFromUser.readLine();
-            
-            System.out.print("Please enter a password: ");
-            String password = inFromUser.readLine();
-            
-            outBuffer.println(username + " " + password); //send the user info to the server to be authenticated
-            String response = inBuffer.readLine();
-            
-            if(response.equals("authenticated"))
-            	authenticated = true;
-        }
+        promptAuthentication(inFromUser, inBuffer, outBuffer);
         
+        /********************************************COMMAND PROMPT************************************************/
         
         while(true){
         	// Get user input and send to the server
@@ -245,6 +231,43 @@ public class MTClient {
         System.out.println("Client: END");
         clientSocket.close();
     }// END OF MAIN
+	
+	
+	/**
+	 * Method for prompting the user for username/password and sending to the Server then awaiting response
+	 * @param inFromUser
+	 * @param inBuffer
+	 * @param outBuffer
+	 * @throws IOException
+	 */
+	public static void promptAuthentication(BufferedReader inFromUser, BufferedReader inBuffer, PrintWriter outBuffer) throws IOException{
+		
+		boolean authenticated = false;
+        String authResponse = "";
+        
+        while(!authenticated) 
+        {
+        	System.out.print("Please enter a username: "); //prompt for username
+            String username = inFromUser.readLine();
+            
+            System.out.print("Please enter a password: "); //prompt for password
+            String password = inFromUser.readLine();
+            
+            outBuffer.println(username + " " + password); //send the user info to the server to be authenticated
+            authResponse = "";
+            
+            while(authResponse.equals("")) //wait for a response
+            {
+                authResponse = inBuffer.readLine();
+                
+                if(authResponse.equals("authenticated"))
+                	authenticated = true; //if the response is positive --> exit loop
+            }
+            
+            if(!authenticated) //if still not a positive response --> notify user
+            	System.out.println("Invalid username or password");
+        }
+	}
 	
 	
 	

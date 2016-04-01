@@ -62,16 +62,8 @@ public class MTServer implements Runnable {
 		   String line = "";
 		   StreamAudio streamer = null;
 
+		   authenticateUser(inBuffer, outBuffer);
 		   
-		   /*TODO Implement a login here
-		    * 
-		    * Prompt for username and password
-		    * Check if it already exists
-		    * If not; allow creation
-		    * User x = new User("sss");
-		    * users.add(x);
-		    
-		   */
 		   
 		   while(true){
 			   
@@ -93,10 +85,10 @@ public class MTServer implements Runnable {
 		               }
 					   
 					   else if(splitCmd[1].length() < 1)
-		            	{
+					   {
 		            		System.out.println("invalid command");
-		            		outBuffer.println("invalid command"); //send error back to client
-		            	}
+		            		outBuffer.println("invalid command"); //send error back to client	
+					   }
 					   
 					   else{
 						   String fileName = splitCmd[1];
@@ -127,7 +119,7 @@ public class MTServer implements Runnable {
 				    * Format: LIST 
 				    */
 				   else if(line.equals("list")){
-					   listSongs(clientSocket, outBuffer);
+					   listSongs(outBuffer);
 				   }
 				   
 				   
@@ -277,7 +269,65 @@ public class MTServer implements Runnable {
 		   
    }
   
-  
+  /**
+   * A method for user authentication
+   * @param inBuffer
+   * @param outBuffer
+   */
+  public void authenticateUser(BufferedReader inBuffer, PrintWriter outBuffer) throws IOException{ 
+	  
+	  boolean authenticated = false;
+	  
+	  while(!authenticated) 
+      {
+		  /*TODO Implement a login here
+		    * 
+		    * Prompt for username and password
+		    * Check if it already exists
+		    * If not; allow creation
+		    * User x = new User("sss");
+		    * users.add(x);
+		   */
+		   String userpass = "";
+		   
+		   while(userpass.equals(""))
+		   {
+			   userpass = inBuffer.readLine(); //read the username & password
+		   }
+		   
+		   String[] splitAuth = userpass.split(" ", 2);
+		   
+		   if(splitAuth.length != 2) //check that both username and password were entered
+		   {
+			   outBuffer.println("invalid entry");
+		   }
+		   else if(splitAuth[0].length() < 1 || splitAuth[1].length() < 1) //check that there are characters username/password
+		   {
+			   outBuffer.println("invalid entry");
+		   }
+		   
+		   else
+		   {
+			   String username = splitAuth[0]; //username and password entered in by the user
+			   String password = splitAuth[1];
+			   
+			   /*TODO Check authentication
+			    * check the username and password against stored users
+			    * determine account type and privileges
+			    * create a User variable that can be used for command verification
+			    * 
+			    * if username and password are valid: outBuffer.println("authenticated")
+			    * outBuffer.println("authenticated");
+			    * authenticated = true;
+			    * 
+			    * 
+			    * otherwise: out.println("invalid entry")
+			    */
+		   }
+      }
+	  
+  }
+   
   public boolean checkFileExists(String fileName) throws IOException
   {
       String filePath = System.getProperty("user.dir");
@@ -302,7 +352,7 @@ public class MTServer implements Runnable {
 	 * @param buff
 	 * @throws IOException
 	 */
-	public void listSongs(Socket cSocket, PrintWriter outBuffer) throws IOException
+	public void listSongs(PrintWriter outBuffer) throws IOException
 	{
 		String filePath = System.getProperty("user.dir");
 		String outputString = "";
