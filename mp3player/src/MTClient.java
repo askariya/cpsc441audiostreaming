@@ -247,18 +247,29 @@ public class MTClient {
             		}
             	}
             	
-            	else{
-            		
-            	}
-            		//sendAudioFile(splitCmd[1], clientSocket); 
-            	
             }
             
             /**
              * REMOVE_SONG <song name>
              */
             else if(splitCmd[0].equals("remove_song") && player.audioStopped()){
-            	//TODO
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid command")){
+            		System.out.println("invalid command: remove_song <song name>");
+            	}
+            	
+            	else if(response.equals("improper authentication")){
+            		System.out.println("You are not authorized to make that change");
+            	}
+            	
+            	else if(response.equals("authenticated")){
+            		String songName = splitCmd[1];
+            		System.out.println("The song '" + songName + "' was deleted from the server");
+            	}
             }
             
             
@@ -351,20 +362,6 @@ public class MTClient {
 	      os.write(mybytearray, 0, mybytearray.length);
 	      os.flush();
 		System.out.println("reached client end");
-		
-		/*
-		 * File myFile = new File(songName);
-		byte[] mybytearray = new byte[1024];
-	      BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
-	      OutputStream os = clientSocket.getOutputStream();
-	      int bytesRead;
-		    
-		    while((bytesRead = bis.read(mybytearray, 0, mybytearray.length)) != -1){
-		    	os.write(mybytearray, 0, mybytearray.length);
-		    }
-	      os.flush();
-		System.out.println("reached client end");
-		 */
 	}
 	
 	
