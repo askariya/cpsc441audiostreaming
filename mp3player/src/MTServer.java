@@ -271,7 +271,8 @@ public class MTServer implements Runnable {
 		            		outBuffer.println("invalid command"); //send error back to the client
 		            	}
 		            	
-		            	else{
+		            	//change to isAdmin condition
+		            	else {
 		            		outBuffer.println("authenticated");
 		            		String songName = splitCmd[1];
 		            		saveFile(songName);
@@ -279,7 +280,28 @@ public class MTServer implements Runnable {
 		            }
 				   
 		            else if(splitCmd[0].equals("remove_song")){
-		            	//TODO
+		            	
+		            	if(splitCmd.length != 2)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command");
+		            	}
+		            	
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to the client
+		            	}
+		            	//change to isAdmin condition
+		            	else {
+		            		String songName = splitCmd[1];
+		            		
+		            		if(checkFileExists(songName)){
+		            			
+		            			deleteFile(songName);
+		            			outBuffer.println("authenticated");
+		            		}
+		            	}
 		            }
 				   
 				   
@@ -356,6 +378,7 @@ public class MTServer implements Runnable {
 			    * 
 			    * otherwise: out.println("invalid entry")
 			    */
+			   
 		   }
       }
 	  
@@ -388,6 +411,12 @@ public class MTServer implements Runnable {
 	    bos.close();
 	    
 	    System.out.println("reached server end");
+  }
+  
+  
+  public void deleteFile(String fileName){
+	  File currentFile = new File(fileName);
+	  currentFile.delete();
   }
   
   

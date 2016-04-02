@@ -246,6 +246,9 @@ public class MTClient {
             			sendAudioFile(songName, clientSocket); //
             		}
             	}
+            	else if(response.equals("unauthorized")){
+            		System.out.println("You do not have permission to perform this action");
+            	}
             	
             }
             
@@ -269,6 +272,9 @@ public class MTClient {
             	else if(response.equals("authenticated")){
             		String songName = splitCmd[1];
             		System.out.println("The song '" + songName + "' was deleted from the server");
+            	}
+            	else if(response.equals("unauthorized")){
+            		System.out.println("You do not have permission to perform this action");
             	}
             }
             
