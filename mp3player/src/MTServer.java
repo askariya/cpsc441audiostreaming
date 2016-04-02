@@ -272,7 +272,7 @@ public class MTServer implements Runnable {
 		            	}
 		            	
 		            	else{
-		            		outBuffer.println("nailed it");
+		            		outBuffer.println("authenticated");
 		            		String songName = splitCmd[1];
 		            		saveFile(songName);
 		            	}
@@ -367,20 +367,27 @@ public class MTServer implements Runnable {
    * @throws Exception
    */
   public void saveFile(String fileName) throws Exception {
-	  
-      InputStream ois = clientSocket.getInputStream();
-      FileOutputStream fos = new FileOutputStream(fileName);;
-
-      byte[] mybytearray = new byte[1024];
-      System.out.println("Reading file from client...");
-      BufferedOutputStream bos = new BufferedOutputStream(fos);
-      int bytesRead;
-      while ((bytesRead = ois.read(mybytearray)) != -1) {
-          bos.write(mybytearray);
-      }
-
-      System.out.println("Writing file complete...");
-
+	   
+	  int portNum = clientSocket.getLocalPort();
+		String pNum = String.valueOf(portNum);
+		
+		String fileNameNew = pNum + "-" + fileName;
+	  	
+	    byte[] mybytearray = new byte[1024];
+	    InputStream is = clientSocket.getInputStream();
+	    FileOutputStream fos = new FileOutputStream(fileNameNew);
+	    BufferedOutputStream bos = new BufferedOutputStream(fos);
+	    int bytesRead;
+	    
+	    while((bytesRead = is.read(mybytearray, 0, mybytearray.length)) != -1){
+	    	bos.write(mybytearray, 0, bytesRead);
+	    	
+	    	if(bytesRead != 1024) //TODO I cheated --> otherwise FT is infinite
+	    		break;
+	    }
+	    bos.close();
+	    
+	    System.out.println("reached server end");
   }
   
   

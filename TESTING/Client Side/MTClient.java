@@ -341,14 +341,13 @@ public class MTClient {
 	 */
 	public static void sendAudioFile(String songName, Socket clientSocket) throws IOException{
 
-		File file = new File(songName);
-        byte[] mybytearray = new byte[(int) file.length()];
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-        bis.read(mybytearray, 0, mybytearray.length);
-        OutputStream os = clientSocket.getOutputStream();
-        os.write(mybytearray, 0, mybytearray.length);
-        os.flush();
-       // os.close();
+		File myFile = new File(songName);
+		byte[] mybytearray = new byte[(int) myFile.length()];
+	      BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+	      bis.read(mybytearray, 0, mybytearray.length);
+	      OutputStream os = clientSocket.getOutputStream();
+	      os.write(mybytearray, 0, mybytearray.length);
+	      os.flush();
 		
 	}
 	

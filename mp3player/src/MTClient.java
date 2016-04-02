@@ -247,8 +247,10 @@ public class MTClient {
             		}
             	}
             	
-            	else
-            		sendAudioFile(splitCmd[1], clientSocket); 
+            	else{
+            		
+            	}
+            		//sendAudioFile(splitCmd[1], clientSocket); 
             	
             }
             
@@ -341,15 +343,28 @@ public class MTClient {
 	 */
 	public static void sendAudioFile(String songName, Socket clientSocket) throws IOException{
 
-		File file = new File(songName);
-        byte[] mybytearray = new byte[(int) file.length()];
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-        bis.read(mybytearray, 0, mybytearray.length);
-        OutputStream os = clientSocket.getOutputStream();
-        os.write(mybytearray, 0, mybytearray.length);
-        os.flush();
-        os.close();
+		File myFile = new File(songName);
+		byte[] mybytearray = new byte[(int) myFile.length()];
+	      BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+	      bis.read(mybytearray, 0, mybytearray.length);
+	      OutputStream os = clientSocket.getOutputStream();
+	      os.write(mybytearray, 0, mybytearray.length);
+	      os.flush();
+		System.out.println("reached client end");
 		
+		/*
+		 * File myFile = new File(songName);
+		byte[] mybytearray = new byte[1024];
+	      BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+	      OutputStream os = clientSocket.getOutputStream();
+	      int bytesRead;
+		    
+		    while((bytesRead = bis.read(mybytearray, 0, mybytearray.length)) != -1){
+		    	os.write(mybytearray, 0, mybytearray.length);
+		    }
+	      os.flush();
+		System.out.println("reached client end");
+		 */
 	}
 	
 	

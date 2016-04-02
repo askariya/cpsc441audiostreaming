@@ -368,20 +368,17 @@ public class MTServer implements Runnable {
    */
   public void saveFile(String fileName) throws Exception {
 	  
-      InputStream ois = clientSocket.getInputStream();
-      FileOutputStream fos = new FileOutputStream(fileName);;
-
-      byte[] mybytearray = new byte[1024];
-      System.out.println("Reading file from client...");
-      BufferedOutputStream bos = new BufferedOutputStream(fos);
-      int bytesRead;
-      while ((bytesRead = ois.read(mybytearray)) != -1) {
-          bos.write(mybytearray);
-          System.out.println(bytesRead);
-      }
-
-      //bos.close();
-      System.out.println("Writing file complete...");
+	  
+	  byte[] mybytearray = new byte[1024];
+	    InputStream is = clientSocket.getInputStream();
+	    FileOutputStream fos = new FileOutputStream(fileName);
+	    BufferedOutputStream bos = new BufferedOutputStream(fos);
+	    int bytesRead;
+	    
+	    while((bytesRead = is.read(mybytearray, 0, mybytearray.length)) != -1){
+	    	bos.write(mybytearray, 0, bytesRead);
+	    }
+	    bos.close();
 
   }
   
