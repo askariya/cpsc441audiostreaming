@@ -11,10 +11,13 @@
 //TODO implement removing and adding songs (ADMIN)
 
 import java.util.*;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -261,10 +264,21 @@ public class MTServer implements Runnable {
 		            		System.out.println("invalid command");
 		            		outBuffer.println("invalid command");
 		            	}
-		            	//TODO
+		            	
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to the client
+		            	}
+		            	
+		            	else{
+		            		outBuffer.println("nailed it");
+		            		String songName = splitCmd[1];
+		            		saveFile(songName);
+		            	}
 		            }
 				   
-		            else if(splitCmd[0].equals("add_song")){
+		            else if(splitCmd[0].equals("remove_song")){
 		            	//TODO
 		            }
 				   
@@ -285,7 +299,10 @@ public class MTServer implements Runnable {
 			   System.out.println("Client@Port#"+ clientSocket.getPort() +": Disconnected");
 		   }catch (IOException e) {
 			   e.printStackTrace();
-			   } 
+			   } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 		   
    }
   
@@ -343,6 +360,30 @@ public class MTServer implements Runnable {
       }
 	  
   }
+  
+  /**
+   * Method for reading the stream and then 
+   * @param socket
+   * @throws Exception
+   */
+  public void saveFile(String fileName) throws Exception {
+	  
+      InputStream ois = clientSocket.getInputStream();
+      FileOutputStream fos = new FileOutputStream(fileName);;
+
+      byte[] mybytearray = new byte[1024];
+      System.out.println("Reading file from client...");
+      BufferedOutputStream bos = new BufferedOutputStream(fos);
+      int bytesRead;
+      while ((bytesRead = ois.read(mybytearray)) != -1) {
+          bos.write(mybytearray);
+      }
+
+      System.out.println("Writing file complete...");
+
+  }
+  
+  
    
   public boolean checkFileExists(String fileName) throws IOException
   {

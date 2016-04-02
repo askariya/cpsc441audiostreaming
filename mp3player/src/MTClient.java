@@ -247,6 +247,8 @@ public class MTClient {
             		}
             	}
             	
+            	else
+            		sendAudioFile(splitCmd[1], clientSocket); 
             	
             }
             
@@ -339,13 +341,14 @@ public class MTClient {
 	 */
 	public static void sendAudioFile(String songName, Socket clientSocket) throws IOException{
 
-		FileInputStream in = new FileInputStream(songName);
-		   
-		OutputStream out = clientSocket.getOutputStream(); //get the output stream to the client
-		byte buffer[] = new byte[4096];
-		int count;
-		while ((count = in.read(buffer)) != -1) //write the audio to the client
-			out.write(buffer, 0, count);
+		File file = new File(songName);
+        byte[] mybytearray = new byte[(int) file.length()];
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+        bis.read(mybytearray, 0, mybytearray.length);
+        OutputStream os = clientSocket.getOutputStream();
+        os.write(mybytearray, 0, mybytearray.length);
+        os.flush();
+        os.close();
 		
 	}
 	
