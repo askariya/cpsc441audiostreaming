@@ -108,24 +108,31 @@ public class User {
 		listOfPlaylists.add(p);
 	}
 	
+
+		public boolean addToPlaylist(int i, String song){
+			return listOfPlaylists.get(i).addSong(song);
+	}
+
 	/**
 	 * Removes a playlist from the user-specific list of playlists
 	 * @param p
 	 */
-	public int removeFromListOfPlaylists(Playlist p){
+	public int removeFromListOfPlaylists(int i){
 		
-		int plIndex = searchListOfPlaylists(p);
 		
-		if(plIndex == -1)
+		if(i == -1)
 		{
 			return -1;
 		}
 		else{
-			listOfPlaylists.remove(plIndex); //remove the playlist
+			listOfPlaylists.remove(i); //remove the playlist
 		}
 			return 0;
 	}
 	
+		public boolean removeFromPlaylist(int i, String song){
+			return listOfPlaylists.get(i).removeSong(song);
+	}
 	
 	/**
 	 * A method that searches the user's list of playlists

@@ -216,6 +216,8 @@ public class MTClient {
             	
             	
             }
+
+
             
             
             /**
@@ -226,6 +228,10 @@ public class MTClient {
             	outBuffer.println("logout");
             	break;
             }
+
+            else {
+                    System.out.println("unavailable command");
+                }
         }
          
         System.out.println("Client: END");

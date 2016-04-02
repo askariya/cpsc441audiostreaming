@@ -22,8 +22,17 @@ public class Playlist {
 	 * Adds a song to the playlist
 	 * @param songName
 	 */
-	public void addSong(String songName){
-		songArray.add(songName);
+	public boolean addSong(String songName){
+		int songIndex = searchPlaylist(songName);
+		
+		if(songIndex != -1) {
+			System.out.println("Song in playlist");
+			return false;
+		}
+		else{
+			songArray.add(songName);
+		}
+		return true;
 	}
 	
 	
@@ -31,15 +40,18 @@ public class Playlist {
 	 * Removes a song from playlist
 	 * @param songName
 	 */
-	public void removeSong(String songName){
+	public boolean removeSong(String songName){
 		
 		int songIndex = searchPlaylist(songName);
 		
-		if(songIndex == -1)
+		if(songIndex == -1) {
 			System.out.println("Song not in playlist");
+			return false;
+		}
 		else{
 			songArray.remove(songIndex);
 		}
+		return true;
 	}
 	
 	/**

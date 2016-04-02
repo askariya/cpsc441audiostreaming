@@ -7,7 +7,6 @@
  */
 
 //TODO implement 'next' function
-//TODO implement Playlists
 //TODO implement removing and adding songs (ADMIN)
 
 import java.util.*;
@@ -184,7 +183,9 @@ public class MTServer implements Runnable {
 		            	   String playlistName = splitCmd[1]; // read the playlist name 
 		            		
 		            	  Playlist p = new Playlist(splitCmd[1]); //create new Playlist object
-		            		if (currentUser.removeFromListOfPlaylists(p)>=0) {
+		            	  int i = 0;
+		            		if ((i = currentUser.searchListOfPlaylists(p))>=0) {
+		            			currentUser.removeFromListOfPlaylists(i);
 		            			System.out.println("valid playlist name");
 		            	   outBuffer.println("valid playlist name"); //send verification back to Client
 		            		}
@@ -215,17 +216,18 @@ public class MTServer implements Runnable {
 		            	
 		            	else{
 		            		String songName = splitCmd[1];
-		            		String playlistName = splitCmd[2];
-		            		
-		            		/*TODO Check that the song and playlist are on the server
-		            		 * Add an && statement that also checks for playlist specific to the User
-		            		 */
+		            		Playlist p = new Playlist(splitCmd[2]);
+		            				            		
 		            		if(checkFileExists(songName)){
-		            			
-		            			//....
-		            			
+		            			int i =0;
+		            			if ((i=currentUser.searchListOfPlaylists(p))>=0){
+		            				currentUser.addToPlaylist(i,songName);
+		            				outBuffer.println("valid playlist addition");
 		            			System.out.println("valid playlist addition");
-							}
+		            			}
+		            			//....
+		            
+										}
 		            		else{
 		            			outBuffer.println("song or playlist unavailable");
 		            			System.out.println("song or playlist unavailable");
@@ -239,7 +241,7 @@ public class MTServer implements Runnable {
 		             * REMOVE_FROM_PLAYLIST
 		             * Removes a song from a playlist
 		             */
-		            else if(splitCmd[0].equals("add_to_playlist")){
+		            else if(splitCmd[0].equals("remove_from_playlist")){
 		            	
 		            	if(splitCmd.length != 3)
 		            	{
@@ -252,11 +254,19 @@ public class MTServer implements Runnable {
 		            		outBuffer.println("invalid command"); //send error back to client
 		            	}
 		            	
-		            	/*TODO Check if the playlist (and song within) exists 
-		            	 * 
-		            	 * Call method to check that the playlist exists for current user
-		            	 * Call method to check that the song exists within the playlist
-		            	 */
+		            	else {
+		            		String songName = splitCmd[1];
+		            		Playlist p = new Playlist(splitCmd[2]);
+		            		System.out.println("what");
+		            		if(checkFileExists(songName)){
+		            			int i =0;
+		            			if ((i=currentUser.searchListOfPlaylists(p))>=0){
+		            				currentUser.removeFromPlaylist(i,songName);
+		            				outBuffer.println("valid playlist removal");
+		            				System.out.println("valid playlist removal");
+		            			}
+		            	}
+		            }
 
 		            }
 				   
@@ -319,7 +329,7 @@ public class MTServer implements Runnable {
 			   String username = splitAuth[0]; //username and password entered in by the user
 			   String password = splitAuth[1];
 			   
-			    * 
+			    /* 
 			    * check the username and password against stored users
 			    * 
 			    * determine account type and privileges
