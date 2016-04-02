@@ -35,7 +35,9 @@ public class MTServer implements Runnable {
 
    
    public static void main(String args[]) throws Exception {
-	  //loadUsers();
+	  loadUsers();
+	  saveUsers();
+
 	   
 	   if (args.length != 1)
        {
@@ -46,7 +48,6 @@ public class MTServer implements Runnable {
 	  ServerSocket serverSocket = new ServerSocket(Integer.parseInt(args[0]));
       System.out.println("Listening");
       
-      users = new ArrayList<User>(); // initialize a static list of users
       
       //TODO load the user information here
       
@@ -69,7 +70,7 @@ public class MTServer implements Runnable {
 		   String line = "";
 		   StreamAudio streamer = null;
 
-//		   authenticateUser(inBuffer, outBuffer);
+		   authenticateUser(inBuffer, outBuffer);
 		   
 		   
 		   while(true){
@@ -326,6 +327,20 @@ public class MTServer implements Runnable {
 			    * 
 			    * otherwise: out.println("invalid entry")
 			    */
+			   for (User user: users) {
+            	if (user.checkUserName(username) && user.checkPassword(password)) {
+								authenticated = true;
+								outBuffer.println("authenticated");
+								currentUser = user;
+								isAdmin = user.isAdmin();
+								System.out.println(username + " authenticated");
+								break;
+								}
+            }
+            if (authenticated == false) {
+            	outBuffer.println("invalid entry");
+            }
+
 		   }
       }
 	  
@@ -376,8 +391,9 @@ public class MTServer implements Runnable {
 	}
 	
 
-	public void loadUsers() throws IOException
+	public static void loadUsers() throws IOException
 	{
+      users = new ArrayList<User>(); // initialize a static list of users
       String filePath = System.getProperty("user.dir");
       File folder = new File(filePath);
       File[] listOfFiles = folder.listFiles();
@@ -392,12 +408,26 @@ public class MTServer implements Runnable {
           }
       }
       // Add default admin and user
+      for (User user : users){
+      	if (user.checkUserName("admin")) {
+      		return;
+      	}
+      }
        User admin = new User("admin", "pass", "admin");
        User freshuser = new User("user", "pass", "user");
        users.add(admin);
        users.add(freshuser);
        
 	}
+
+
+		public static void saveUsers() throws IOException
+	{
+      for (User user : users) {
+      	user.saveAccountData();
+       
+			}
+   }
    
    
   

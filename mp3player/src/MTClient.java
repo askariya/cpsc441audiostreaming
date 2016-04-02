@@ -41,7 +41,7 @@ public class MTClient {
         PlayWAV player = new PlayWAV(clientSocket);     
         
         
-//      promptAuthentication(inFromUser, inBuffer, outBuffer);
+      promptAuthentication(inFromUser, inBuffer, outBuffer);
         
         /********************************************COMMAND PROMPT************************************************/
         
@@ -262,6 +262,7 @@ public class MTClient {
                 
                 if(authResponse.equals("authenticated"))
                 	authenticated = true; //if the response is positive --> exit loop
+                System.out.println(authResponse);
             }
             
             if(!authenticated) //if still not a positive response --> notify user

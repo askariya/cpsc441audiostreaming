@@ -34,6 +34,10 @@ public class User {
 		return userName;
 	}
 
+		public String getPassword(){
+		return password;
+	}
+
 	public boolean checkUserName(String input){
 		return input.matches(userName);
 	}
@@ -42,8 +46,8 @@ public class User {
 		return input.matches(password);
 	}
 
-	public String getUserType(){
-		return userType;
+	public boolean isAdmin(){
+		return (userType == "admin");
 	}
 
 /* Persistent Account Data */
@@ -55,6 +59,7 @@ public class User {
 		for (Playlist list: listOfPlaylists) {
 			fw.write(list.exportAllSongs() + "\n");
 		}
+		fw.close();
 	} catch (IOException e) {
 			   e.printStackTrace();
 			   } 
