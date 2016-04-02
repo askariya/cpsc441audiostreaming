@@ -35,9 +35,6 @@ public class MTServer implements Runnable {
 
    
    public static void main(String args[]) throws Exception {
-	  loadUsers();
-	  saveUsers();
-
 	   
 	   if (args.length != 1)
        {
@@ -49,7 +46,7 @@ public class MTServer implements Runnable {
       System.out.println("Listening");
       
       
-      //TODO load the user information here
+      	loadUsers();
       
       //while the server is running, keep accepting connections from TCP clients (if any are available)
       while (true) {
@@ -149,11 +146,15 @@ public class MTServer implements Runnable {
 		            	}
 		            	
 		            	else{
-		            		String playlistName = splitCmd[1]; // read the playlist name 
-		            		Playlist p = new Playlist(playlistName); //create new Playlist object
+		            		// String playlistName = splitCmd[1]; // read the playlist name 
+		            		Playlist p = new Playlist(splitCmd[1]); //create new Playlist object
+		            		if (currentUser.searchListOfPlaylists(p)>0) {
+		            			System.out.println("already got that playlist");
+		            			outBuffer.println("already got that playlist"); //send verification back to Client
+		            			break;
+		            		}
 		            		
-		            		//TODO add to list of Playlists
-		            		//currentUser.addToListOfPlaylists(p)
+		            		currentUser.addToListOfPlaylists(p);
 		            		
 		            		
 		            		System.out.println("valid playlist name");
@@ -182,11 +183,15 @@ public class MTServer implements Runnable {
 		               else{
 		            	   String playlistName = splitCmd[1]; // read the playlist name 
 		            		
-		            		//TODO Remove from list of Playlists
-		            		//currentUser.removeFromListOfPlaylists(p)
-		            	   
-		            	   System.out.println("valid playlist name");
+		            	  Playlist p = new Playlist(splitCmd[1]); //create new Playlist object
+		            		if (currentUser.removeFromListOfPlaylists(p)>=0) {
+		            			System.out.println("valid playlist name");
 		            	   outBuffer.println("valid playlist name"); //send verification back to Client
+		            		}
+		            	  else {
+		            	  	System.out.println("song or playlist unavailable");
+		            	     outBuffer.println("song or playlist unavailable"); //send verification back to Client
+		            	  }
 		            	}
 					   
 				   }
@@ -262,8 +267,11 @@ public class MTServer implements Runnable {
 				    *  Format: LOGOUT
 				    */
 				   else if(line.equals("logout")){
+					   saveUsers();
 					   break;   
 				   }
+				   updateCurrentUser();
+				   System.out.println("updateuser");
 			   }
 			   
 			   
@@ -311,7 +319,6 @@ public class MTServer implements Runnable {
 			   String username = splitAuth[0]; //username and password entered in by the user
 			   String password = splitAuth[1];
 			   
-			   /*TODO Check authentication
 			    * 
 			    * check the username and password against stored users
 			    * 
@@ -403,8 +410,9 @@ public class MTServer implements Runnable {
           if (listOfFiles[i].isFile() && listOfFiles[i].getName().matches("^USER-.+"))
           {
               User tempuser = new User(listOfFiles[i].getName().substring(5));
-              tempuser.loadAccountData();
-              users.add(tempuser);
+              if (tempuser.loadAccountData()) { // if data not corrupt
+              	users.add(tempuser);
+              }
           }
       }
       // Add default admin and user
@@ -425,6 +433,17 @@ public class MTServer implements Runnable {
 	{
       for (User user : users) {
       	user.saveAccountData();
+       
+			}
+   }
+
+  public void updateCurrentUser() throws IOException
+	{
+      for (User user : users) {
+      	if (user.checkUserName(currentUser.getUserName())) {
+      		users.remove(user);
+      		users.add(currentUser);
+      	}
        
 			}
    }
