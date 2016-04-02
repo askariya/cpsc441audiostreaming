@@ -253,7 +253,20 @@ public class MTServer implements Runnable {
 		            	 */
 
 		            }
+		            
+		            else if(splitCmd[0].equals("add_song")){
+		            	
+		            	if(splitCmd.length != 2)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command");
+		            	}
+		            	//TODO
+		            }
 				   
+		            else if(splitCmd[0].equals("add_song")){
+		            	//TODO
+		            }
 				   
 				   
 				   
