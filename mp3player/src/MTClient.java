@@ -219,6 +219,31 @@ public class MTClient {
             	}
             }
             
+            /**
+             * PLAY_PLAYLIST <playlist name>
+             * play a playlist
+             */
+            else if(splitCmd[0].equals("play_playlist") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("valid playlist name"))
+                {
+                	//TODO play playlist here
+                }
+            	
+            	else if(response.equals("invalid command"))
+                {
+                	System.out.println("Invalid command: play_playlist <playlist name>");
+                }
+            	else if(response.equals("playlist unavailable")){
+            		System.out.println("Playlist unavailable");
+            	}
+            }
+            
+            
             
             /**
              * ADD_TO_PLAYLIST <song name> <playlist name>  
@@ -242,6 +267,10 @@ public class MTClient {
             		System.out.println("Song or playlist is unavailable");
             	}
             }
+            
+            
+            
+            
             
             /**
              * REMOVE_FROM_PLAYLIST <song name> <playlist name>  
