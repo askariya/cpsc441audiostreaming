@@ -634,12 +634,14 @@ public class MTServer implements Runnable {
 	
 	public void updateCurrentUser() throws IOException
 	{
-		for (User user : users) {
+		int j = 0;
+		for (int i=0; i<users.size(); i++) {
 			
-			if (user.checkUserName(currentUser.getUserName())) {
-				users.remove(user);
-				users.add(currentUser);
+			if (users.get(i).checkUserName(currentUser.getUserName())) {
+				j=i;
       		}
+      users.remove(j);
+			users.add(currentUser);
 			
 		}
 		
