@@ -1,8 +1,11 @@
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -170,7 +173,7 @@ public class MTClient {
             
             
             /**
-             * ADD_TO_PLAYLIST <song> <playlist>  
+             * ADD_TO_PLAYLIST <song name> <playlist name>  
              */
             else if(splitCmd[0].equals("add_to_playlist") && player.audioStopped()){
             	
@@ -193,7 +196,7 @@ public class MTClient {
             }
             
             /**
-             * REMOVE_FROM_PLAYLIST <song> <playlist>  
+             * REMOVE_FROM_PLAYLIST <song name> <playlist name>  
              */
             else if(splitCmd[0].equals("remove_from_playlist") && player.audioStopped()){
             	
@@ -218,6 +221,64 @@ public class MTClient {
             }
 
 
+            
+            /**
+             * ADD_SONG <song name>
+             */
+            else if(splitCmd[0].equals("add_song") && player.audioStopped()){
+            
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid command")){
+            		System.out.println("invalid command: add_song <song name>");
+            	}
+            	
+            	else if(response.equals("improper authentication")){
+            		System.out.println("You are not authorized to make that change");
+            	}
+            	
+            	else if(response.equals("authenticated")){
+            		
+            		String songName = splitCmd[1];
+            		
+            		if(checkFileExists(songName)) //check that the song exists on the user side
+            		{
+            			sendAudioFile(songName, clientSocket); //
+            		}
+            	}
+            	else if(response.equals("unauthorized")){
+            		System.out.println("You do not have permission to perform this action");
+            	}
+            	
+            }
+            
+            /**
+             * REMOVE_SONG <song name>
+             */
+            else if(splitCmd[0].equals("remove_song") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid command")){
+            		System.out.println("invalid command: remove_song <song name>");
+            	}
+            	
+            	else if(response.equals("improper authentication")){
+            		System.out.println("You are not authorized to make that change");
+            	}
+            	
+            	else if(response.equals("authenticated")){
+            		String songName = splitCmd[1];
+            		System.out.println("The song '" + songName + "' was deleted from the server");
+            	}
+            	else if(response.equals("unauthorized")){
+            		System.out.println("You do not have permission to perform this action");
+            	}
+            }
             
             
             /**
@@ -276,6 +337,45 @@ public class MTClient {
         }
 	}
 	
+	/**
+	 * checks that a file exists in the current directory
+	 * @param fileName
+	 * @return
+	 * @throws IOException
+	 */
+	public static boolean checkFileExists(String fileName) throws IOException
+	{
+		String filePath = System.getProperty("user.dir");
+		File folder = new File(filePath);
+	    File[] listOfFiles = folder.listFiles();
+	    // Send each file name in server directory
+	    for (int i = 0; i < listOfFiles.length; i++)
+	    {
+	   	    //check that the file exists
+	        if (listOfFiles[i].isFile() && listOfFiles[i].getName().equals(fileName) && fileName.contains(".wav"))
+	        {
+	            return true;
+	        }
+	    }
+	      
+	    return false; 
+	}
+	
+	/**
+	 * Streams a song to the Server
+	 * @param fileName
+	 */
+	public static void sendAudioFile(String songName, Socket clientSocket) throws IOException{
+
+		File myFile = new File(songName);
+		byte[] mybytearray = new byte[(int) myFile.length()];
+	      BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+	      bis.read(mybytearray, 0, mybytearray.length);
+	      OutputStream os = clientSocket.getOutputStream();
+	      os.write(mybytearray, 0, mybytearray.length);
+	      os.flush();
+		System.out.println("reached client end");
+	}
 	
 	
 }

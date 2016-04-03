@@ -10,10 +10,13 @@
 //TODO implement removing and adding songs (ADMIN)
 
 import java.util.*;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -269,7 +272,53 @@ public class MTServer implements Runnable {
 		            }
 
 		            }
+		            
+		            else if(splitCmd[0].equals("add_song")){
+		            	
+		            	if(splitCmd.length != 2)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command");
+		            	}
+		            	
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to the client
+		            	}
+		            	
+		            	//change to isAdmin condition
+		            	else {
+		            		outBuffer.println("authenticated");
+		            		String songName = splitCmd[1];
+		            		saveFile(songName);
+		            	}
+		            }
 				   
+		            else if(splitCmd[0].equals("remove_song")){
+		            	
+		            	if(splitCmd.length != 2)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command");
+		            	}
+		            	
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to the client
+		            	}
+		            	//change to isAdmin condition
+		            	else {
+		            		String songName = splitCmd[1];
+		            		
+		            		if(checkFileExists(songName)){
+		            			
+		            			deleteFile(songName);
+		            			outBuffer.println("authenticated");
+		            		}
+		            	}
+		            }
 				   
 				   
 				   
@@ -291,7 +340,10 @@ public class MTServer implements Runnable {
 			   System.out.println("Client@Port#"+ clientSocket.getPort() +": Disconnected");
 		   }catch (IOException e) {
 			   e.printStackTrace();
-			   } 
+			   } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 		   
    }
   
@@ -328,8 +380,8 @@ public class MTServer implements Runnable {
 		   {
 			   String username = splitAuth[0]; //username and password entered in by the user
 			   String password = splitAuth[1];
-			   
-			    /* 
+
+			   /*
 			    * check the username and password against stored users
 			    * 
 			    * determine account type and privileges
@@ -362,6 +414,43 @@ public class MTServer implements Runnable {
       }
 	  
   }
+  
+  /**
+   * Method for reading the stream and then 
+   * @param socket
+   * @throws Exception
+   */
+  public void saveFile(String fileName) throws Exception {
+	   
+	  int portNum = clientSocket.getLocalPort();
+		String pNum = String.valueOf(portNum);
+		
+		String fileNameNew = pNum + "-" + fileName;
+	  	
+	    byte[] mybytearray = new byte[1024];
+	    InputStream is = clientSocket.getInputStream();
+	    FileOutputStream fos = new FileOutputStream(fileNameNew);
+	    BufferedOutputStream bos = new BufferedOutputStream(fos);
+	    int bytesRead;
+	    
+	    while((bytesRead = is.read(mybytearray, 0, mybytearray.length)) != -1){
+	    	bos.write(mybytearray, 0, bytesRead);
+	    	
+	    	if(bytesRead != 1024) //TODO I cheated --> otherwise FT is infinite
+	    		break;
+	    }
+	    bos.close();
+	    
+	    System.out.println("reached server end");
+  }
+  
+  
+  public void deleteFile(String fileName){
+	  File currentFile = new File(fileName);
+	  currentFile.delete();
+  }
+  
+  
    
   public boolean checkFileExists(String fileName) throws IOException
   {
