@@ -7,7 +7,6 @@
  */
 
 //TODO implement 'next' function
-//TODO implement removing and adding songs (ADMIN)
 
 import java.util.*;
 import java.io.BufferedOutputStream;
@@ -127,6 +126,7 @@ public class MTServer implements Runnable {
 				    */
 				   else if(line.equals("list")){
 					   listSongs(outBuffer);
+					   listPlaylists(outBuffer);
 				   }
 				   
 				   
@@ -163,6 +163,42 @@ public class MTServer implements Runnable {
 		            		outBuffer.println("valid playlist name"); //send verification back to Client
 		            	}
 				   }
+				   
+				   /**
+		             * VIEW
+		             * View a playlist
+		             */
+				   else if(splitCmd[0].equals("view")){
+					   
+					   if((splitCmd.length != 2))
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+					   
+		            	else{
+		            		Playlist p = new Playlist(splitCmd[1]);
+		            		int i;
+		            		if ((i = currentUser.searchListOfPlaylists(p)) > 0) {
+		            			currentUser.getPlaylist(i);
+		            			outBuffer.println("valid playlist");
+		            			System.out.println("valid playlist");
+		            			listPlaylistContents(outBuffer, i);
+		            			
+		            		}
+		            		else{
+		            			outBuffer.println("invalid playlist");
+		            			System.out.println("invalid playlist");
+		            		}
+		            	}
+				   }
+				   
+				   
 				   
 				   /**
 				    * REMOVE_PLAYLIST
@@ -223,17 +259,20 @@ public class MTServer implements Runnable {
 		            				            		
 		            		if(checkFileExists(songName)){
 		            			int i =0;
+		            			//check if playlist exists
 		            			if ((i=currentUser.searchListOfPlaylists(p))>=0){
 		            				currentUser.addToPlaylist(i,songName);
 		            				outBuffer.println("valid playlist addition");
 		            				System.out.println("valid playlist addition");
 		            			}
-		            			//....TODO?
+		            			else{
+		            				System.out.println("playlist unavailable");
+		            			}
 		            
 							}
 		            		else{
 		            			outBuffer.println("song or playlist unavailable");
-		            			System.out.println("song or playlist unavailable");
+		            			System.out.println("song unavailable");
 		            		}
 		            		
 		            		
@@ -520,6 +559,38 @@ public class MTServer implements Runnable {
 	      
 	}
 	
+	/**
+	 * Method that lists all the Playlists specific to the user
+	 * @param outBuffer
+	 * @throws IOException
+	 */
+	public void listPlaylists(PrintWriter outBuffer)throws IOException{
+		
+		for(int i = 0; i < currentUser.playlistCount(); i++){
+			Playlist p = currentUser.getPlaylist(i);
+            outBuffer.println(p.getName());
+		}
+		
+		String eof = "eof";
+	    outBuffer.println(eof);
+	}
+	
+	/**
+	 * Method that lists all the songs in a playlist
+	 * @param outBuffer
+	 * @param playlistIndex
+	 */
+	public void listPlaylistContents(PrintWriter outBuffer, int playlistIndex){
+		
+		Playlist p = currentUser.getPlaylist(playlistIndex);
+		
+		for(int i= 0; i < p.getPlaylistSize(); i++){
+			outBuffer.println(p.getSong(i));
+		}
+		
+		String eof = "eof";
+	    outBuffer.println(eof);
+	}
 
 	public static void loadUsers() throws IOException
 	{

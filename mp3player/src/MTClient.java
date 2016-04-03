@@ -50,7 +50,7 @@ public class MTClient {
         
         while(true){
         	// Get user input and send to the server
-            System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");
+            System.out.print("\nPlease enter a message to be sent to the server ('logout' to terminate): ");
             line = inFromUser.readLine();
         	if(player.threadOver){
         		System.out.println("IT's DEAD");
@@ -126,6 +126,14 @@ public class MTClient {
             		System.out.println(response); //print file names to the user
             	}
             	System.out.println("\n");
+            	
+            	
+            	System.out.println("\n-----------PLAYLISTS AVAILABLE-------------\n");
+            	
+            	while(!(response = inBuffer.readLine()).equals("eof")){
+            		System.out.println(response); //print playlist names to the user
+            	}
+            	System.out.println("\n");
             }
             
             /**
@@ -149,10 +157,43 @@ public class MTClient {
                 }
             	
             	else if(response.equals("playlist already exists")){
-            		System.out.println("That playlist has already been created!");
+            		System.out.println("That playlist has already been created");
             	}
 
             }
+            
+            /**
+             * VIEW <playlist name>
+             * view a playlist
+             */
+            else if(splitCmd[0].equals("view") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid command"))
+                {
+                	System.out.println("Invalid command: create_playlist <playlist name>");
+                }
+            	
+            	else if(response.equals("invalid playlist")){
+            		System.out.println("That playlist does not currently exist");
+            	}
+            	
+            	else if(response.equals("valid playlist")){
+            		
+            		System.out.println("\n-----------Playlist: "+ splitCmd[1] +"-------------\n");
+                	int i = 1;
+                	while(!(response = inBuffer.readLine()).equals("eof")){
+                		System.out.println(i + ". " + response); //print playlist names to the user
+                		i++;
+                	}
+                	System.out.println("\n");
+            	}
+            }
+            
+            
             
             /**
              * REMOVE_PLAYLIST <playlist name>

@@ -109,8 +109,8 @@ public class User {
 	}
 	
 
-		public boolean addToPlaylist(int i, String song){
-			return listOfPlaylists.get(i).addSong(song);
+	public boolean addToPlaylist(int i, String song){
+		return listOfPlaylists.get(i).addSong(song);
 	}
 
 	/**
@@ -151,6 +151,23 @@ public class User {
 		}
 		
 		return -1;
+	}
+	
+	/**
+	 * Returns Playlist at an index
+	 * @param index
+	 * @return
+	 */
+	public Playlist getPlaylist(int index){
+		return listOfPlaylists.get(index);
+	}
+	
+	/**
+	 * Returns the number of playlists owned by the user
+	 * @return
+	 */
+	public int playlistCount(){
+		return listOfPlaylists.size();
 	}
 	
 

@@ -17,6 +17,10 @@ public class Playlist {
 		return playlistName;
 	}
 	
+	public int getPlaylistSize(){
+		return songArray.size();
+	}
+	
 	
 	/**
 	 * Adds a song to the playlist
