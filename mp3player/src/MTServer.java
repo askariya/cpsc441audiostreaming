@@ -12,6 +12,9 @@ import java.util.*;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -128,7 +131,33 @@ public class MTServer implements Runnable {
 					   listSongs(outBuffer);
 					   listPlaylists(outBuffer);
 				   }
+
+				   	/**Create user command
+				    * Format: create_user <name> <pass>
+				    */
+				   else if(splitCmd[0].equals("create_user")){
+					   if (splitCmd.length!=3) {
+					   		System.out.println("invalid command");
+		            outBuffer.println("invalid command"); //send error back to client
+		            break;
+					   }
+					   createUser(outBuffer, splitCmd[1], splitCmd[2]);
+				   }
 				   
+				   	/**Remove user command
+				    * Format: remove_user <pass>
+				    */
+				   else if(splitCmd[0].equals("remove_user")){
+					   if (splitCmd.length!=2) {
+					   		System.out.println("invalid command");
+		            outBuffer.println("invalid command"); //send error back to client
+		            break;
+					   }
+					   removeUser(outBuffer, splitCmd[1]);
+				   }
+
+
+
 				   
 				   /**
 		             * CREATE_PLAYLIST
@@ -509,9 +538,12 @@ public class MTServer implements Runnable {
   }
   
   
-  public void deleteFile(String fileName){
-	  File currentFile = new File(fileName);
-	  currentFile.delete();
+  // TODO this doesn't work
+  public void deleteFile(String fileName) throws IOException{
+	  String filePath = System.getProperty("user.dir");
+	  Path path = Paths.get(filePath, fileName);
+	  System.out.println(path.toString());
+	  Files.delete(path);
   }
   
   
@@ -646,6 +678,51 @@ public class MTServer implements Runnable {
 		}
 		
 	}
+
+	public void createUser(PrintWriter outBuffer, String name, String pass) throws IOException
+	{
+		if (!isAdmin) {
+			outBuffer.println("must be admin");
+			return;
+		}
+
+		for (User user : users) {
+			if (user.checkUserName(name)) {
+				outBuffer.println("account already exists");
+				return;
+			}
+			
+		}
+		User newUser = new User(name, pass, "user");
+		users.add(newUser);
+		outBuffer.println("user created");
+			
+		}
+
+
+	public void removeUser(PrintWriter outBuffer, String name) throws IOException
+	{
+		if (!isAdmin) {
+			outBuffer.println("must be admin");
+			return;
+		}
+
+		int j = 0;
+		for (int i=0; i<users.size(); i++) {
+			
+			if (users.get(i).checkUserName(name)) {
+				j=i;
+      }
+      users.remove(j);
+      deleteFile("USER-" + name);
+      System.out.println("user removed");
+      outBuffer.println("user removed");
+      return;
+		}
+		outBuffer.println("account doesn't exist");
+			
+		}
+		
    
    
   

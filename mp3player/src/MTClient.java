@@ -335,24 +335,77 @@ public class MTClient {
              * REMOVE_SONG <song name>
              */
             else if(splitCmd[0].equals("remove_song") && player.audioStopped()){
-            	
-            	outBuffer.println(line); // send to Server
-            	String response = inBuffer.readLine();
-            	System.out.println("Server Response: " + response);
-            	
-            	if(response.equals("invalid command")){
-            		System.out.println("invalid command: remove_song <song name>");
-            	}
-            	
-            	else if(response.equals("authenticated")){
-            		String songName = splitCmd[1];
-            		System.out.println("The song '" + songName + "' was deleted from the server");
-            	}
-            	else if(response.equals("unauthorized")){
-            		System.out.println("You do not have permission to perform this action");
-            	}
+                
+                outBuffer.println(line); // send to Server
+                String response = inBuffer.readLine();
+                System.out.println("Server Response: " + response);
+                
+                if(response.equals("invalid command")){
+                    System.out.println("invalid command: remove_song <song name>");
+                }
+                
+                else if(response.equals("authenticated")){
+                    String songName = splitCmd[1];
+                    System.out.println("The song '" + songName + "' was deleted from the server");
+                }
+                else if(response.equals("unauthorized")){
+                    System.out.println("You do not have permission to perform this action");
+                }
+            }
+
+
+            /**
+             * CREATE_USER <username> password
+             */
+            else if(splitCmd[0].equals("create_user") && player.audioStopped()){
+                
+                outBuffer.println(line); // send to Server
+                String response = inBuffer.readLine();
+                System.out.println("Server Response: " + response);
+                
+                if(response.equals("invalid command")){
+                    System.out.println("invalid command: create_user <username> <password>");
+                }
+                
+                else if(response.equals("account already exists")){
+                    String account = splitCmd[1];
+                    System.out.println("The user '" + account + "' already exists");
+                }
+                else if(response.equals("must be admin")){
+                    System.out.println(response);
+                }
+                else if(response.equals("user created")){
+                    String account = splitCmd[1];
+                    System.out.println("The user '" + account + "' was created");
+                }
             }
             
+
+            /**
+             * REMOVE_USER <username>
+             */
+            else if(splitCmd[0].equals("remove_user") && player.audioStopped()){
+                
+                outBuffer.println(line); // send to Server
+                String response = inBuffer.readLine();
+                System.out.println("Server Response: " + response);
+                
+                if(response.equals("invalid command")){
+                    System.out.println("invalid command: remove_user <username>");
+                }
+                
+                else if(response.equals("account doesn't exist")){
+                    String account = splitCmd[1];
+                    System.out.println("The user '" + account + "' already exists");
+                }
+                else if(response.equals("must be admin")){
+                    System.out.println(response);
+                }
+                else if(response.equals("user removed")){
+                    String account = splitCmd[1];
+                    System.out.println("The user '" + account + "' was removed");
+                }
+            }
             
             /**
              * LOGOUT

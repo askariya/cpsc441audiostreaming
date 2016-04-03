@@ -47,7 +47,7 @@ public class User {
 	}
 
 	public boolean isAdmin(){
-		return (userType == "admin");
+		return (userType.matches("admin"));
 	}
 
 /* Persistent Account Data */
@@ -66,7 +66,6 @@ public class User {
 			   } 
 	}
 
-// FIX REGEX
 	public boolean loadAccountData() throws IOException {
 			try {
 			BufferedReader br = new BufferedReader(new FileReader("USER-" + userName));
