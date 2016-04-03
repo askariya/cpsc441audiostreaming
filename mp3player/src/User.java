@@ -34,6 +34,10 @@ public class User {
 		return userName;
 	}
 
+		public String getPassword(){
+		return password;
+	}
+
 	public boolean checkUserName(String input){
 		return input.matches(userName);
 	}
@@ -42,39 +46,47 @@ public class User {
 		return input.matches(password);
 	}
 
-	public String getUserType(){
-		return userType;
+	public boolean isAdmin(){
+		return (userType == "admin");
 	}
 
 /* Persistent Account Data */
 	public void saveAccountData() throws IOException {
 		try{   
 			FileWriter fw = new FileWriter("USER-" + userName);
+		fw.write("begindata:\n");
 		fw.write(password + "\n");
 		fw.write(userType + "\n");
 		for (Playlist list: listOfPlaylists) {
 			fw.write(list.exportAllSongs() + "\n");
 		}
+		fw.close();
 	} catch (IOException e) {
 			   e.printStackTrace();
 			   } 
 	}
 
 // FIX REGEX
-	public void loadAccountData() throws IOException {
+	public boolean loadAccountData() throws IOException {
 			try {
 			BufferedReader br = new BufferedReader(new FileReader("USER-" + userName));
+			String line = "";
+				if (!(line = br.readLine()).matches("begindata:")) {
+					System.out.println("User data is corrupted");
+					System.out.println(line);
+					return false;
+				}
 		    password = br.readLine();
 		    userType = br.readLine();
 		    String list = br.readLine();
 
 		    while (list != null) {
-		    	Pattern pattern = Pattern.compile("^PLAYLIST:(.*)\\0(.*)$");
+		    	Pattern pattern = Pattern.compile("^PLAYLIST:([^|]+|)|(.*)$");
 					Matcher matcher = pattern.matcher(list);
 					if (matcher.find())
 					{
-						Playlist tempList = new Playlist (matcher.group(0));
-						tempList.importAllSongs(matcher.group(1));
+						Playlist tempList = new Playlist (matcher.group(1));
+						tempList.importAllSongs(matcher.group(2));
 						listOfPlaylists.add(tempList);
 					}
 		        list = br.readLine();
@@ -84,6 +96,7 @@ public class User {
 		    catch (IOException e) {
 			   e.printStackTrace();
 			   } 
+			return true;
 	}
 	
 	
@@ -99,18 +112,18 @@ public class User {
 	 * Removes a playlist from the user-specific list of playlists
 	 * @param p
 	 */
-	public void removeFromListOfPlaylists(Playlist p){
+	public int removeFromListOfPlaylists(Playlist p){
 		
 		int plIndex = searchListOfPlaylists(p);
 		
 		if(plIndex == -1)
 		{
-			System.out.println("Playlist does not exist!");
+			return -1;
 		}
 		else{
 			listOfPlaylists.remove(plIndex); //remove the playlist
 		}
-			
+			return 0;
 	}
 	
 	

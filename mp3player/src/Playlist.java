@@ -52,18 +52,20 @@ public class Playlist {
 	}
 
 	public String exportAllSongs(){
-		String allSongs = "PLAYLIST:" + playlistName + "\0";
+		String allSongs = "PLAYLIST:" + playlistName + "|";
 			for (String s : songArray)
 			{
-				allSongs += s + "\0";
+				allSongs += s + "|";
 			}
 
 		return allSongs;
 	}
 
 		public void importAllSongs(String allsongs){
-		String allSongs = "PLAYLIST:" + playlistName + "\0";
-			for (String song: allSongs.split("\0")){
+			if(allsongs == null || allsongs.isEmpty()){
+				return;
+			}
+			for (String song: allsongs.split("|")){
          this.addSong(song);
       }
 	}
