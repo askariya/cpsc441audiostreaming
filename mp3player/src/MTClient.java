@@ -147,6 +147,10 @@ public class MTClient {
                 {
                 	System.out.println("Invalid command: create_playlist <playlist name>");
                 }
+            	
+            	else if(response.equals("playlist already exists")){
+            		System.out.println("That playlist has already been created!");
+            	}
 
             }
             
@@ -169,6 +173,9 @@ public class MTClient {
                 {
                 	System.out.println("Invalid command: remove_playlist <playlist name>");
                 }
+            	else if(response.equals("playlist unavailable")){
+            		System.out.println("Playlist unavailable");
+            	}
             }
             
             
@@ -217,6 +224,10 @@ public class MTClient {
             		System.out.println("Song or playlist is unavailable");
             	}
             	
+            	else if(response.equals("invalid playlist removal")){
+            		System.out.println("Song or playlist is unavailable");
+            	}
+            	
             	
             }
 
@@ -233,10 +244,6 @@ public class MTClient {
             	
             	if(response.equals("invalid command")){
             		System.out.println("invalid command: add_song <song name>");
-            	}
-            	
-            	else if(response.equals("improper authentication")){
-            		System.out.println("You are not authorized to make that change");
             	}
             	
             	else if(response.equals("authenticated")){
@@ -265,10 +272,6 @@ public class MTClient {
             	
             	if(response.equals("invalid command")){
             		System.out.println("invalid command: remove_song <song name>");
-            	}
-            	
-            	else if(response.equals("improper authentication")){
-            		System.out.println("You are not authorized to make that change");
             	}
             	
             	else if(response.equals("authenticated")){
@@ -362,7 +365,7 @@ public class MTClient {
 	}
 	
 	/**
-	 * Streams a song to the Server
+	 * Transfers a song to the Server
 	 * @param fileName
 	 */
 	public static void sendAudioFile(String songName, Socket clientSocket) throws IOException{

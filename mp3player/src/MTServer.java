@@ -151,9 +151,9 @@ public class MTServer implements Runnable {
 		            		// String playlistName = splitCmd[1]; // read the playlist name 
 		            		Playlist p = new Playlist(splitCmd[1]); //create new Playlist object
 		            		if (currentUser.searchListOfPlaylists(p)>0) {
-		            			System.out.println("already got that playlist");
-		            			outBuffer.println("already got that playlist"); //send verification back to Client
-		            			break;
+		            			System.out.println("playlist already exists");
+		            			outBuffer.println("playlist already exists"); //send verification back to Client
+		            			break; //TODO maybe lose this break statement --> cause wtf
 		            		}
 		            		
 		            		currentUser.addToListOfPlaylists(p);
@@ -190,11 +190,11 @@ public class MTServer implements Runnable {
 		            		if ((i = currentUser.searchListOfPlaylists(p))>=0) {
 		            			currentUser.removeFromListOfPlaylists(i);
 		            			System.out.println("valid playlist name");
-		            	   outBuffer.println("valid playlist name"); //send verification back to Client
+		            			outBuffer.println("valid playlist name"); //send verification back to Client
 		            		}
 		            	  else {
-		            	  	System.out.println("song or playlist unavailable");
-		            	     outBuffer.println("song or playlist unavailable"); //send verification back to Client
+		            	  	System.out.println("playlist unavailable");
+		            	     outBuffer.println("playlist unavailable"); //send error back to Client
 		            	  }
 		            	}
 					   
@@ -226,11 +226,11 @@ public class MTServer implements Runnable {
 		            			if ((i=currentUser.searchListOfPlaylists(p))>=0){
 		            				currentUser.addToPlaylist(i,songName);
 		            				outBuffer.println("valid playlist addition");
-		            			System.out.println("valid playlist addition");
+		            				System.out.println("valid playlist addition");
 		            			}
-		            			//....
+		            			//....TODO?
 		            
-										}
+							}
 		            		else{
 		            			outBuffer.println("song or playlist unavailable");
 		            			System.out.println("song or playlist unavailable");
@@ -268,11 +268,21 @@ public class MTServer implements Runnable {
 		            				outBuffer.println("valid playlist removal");
 		            				System.out.println("valid playlist removal");
 		            			}
-		            	}
-		            }
+		            			else{
+		            				outBuffer.println("invalid playlist removal");
+		            			}
+		            		}
+		            		else{
+	            				outBuffer.println("invalid playlist removal");
+	            			}
+		            	}	
 
 		            }
 		            
+				   	/**
+				   	 * ADD_SONG
+				   	 * Adds a Client's local song to the Server
+				   	 */
 		            else if(splitCmd[0].equals("add_song")){
 		            	
 		            	if(splitCmd.length != 2)
@@ -288,13 +298,21 @@ public class MTServer implements Runnable {
 		            	}
 		            	
 		            	//change to isAdmin condition
-		            	else {
+		            	else if(isAdmin){
 		            		outBuffer.println("authenticated");
 		            		String songName = splitCmd[1];
 		            		saveFile(songName);
 		            	}
+		            	
+		            	else if(!isAdmin){
+		            		outBuffer.println("unauthorized");
+		            	}
 		            }
 				   
+				   /**
+				    * REMOVE_SONG
+				    * Removes a song from the Server 
+				    */
 		            else if(splitCmd[0].equals("remove_song")){
 		            	
 		            	if(splitCmd.length != 2)
@@ -309,7 +327,7 @@ public class MTServer implements Runnable {
 		            		outBuffer.println("invalid command"); //send error back to the client
 		            	}
 		            	//change to isAdmin condition
-		            	else {
+		            	else if(isAdmin){
 		            		String songName = splitCmd[1];
 		            		
 		            		if(checkFileExists(songName)){
@@ -317,6 +335,9 @@ public class MTServer implements Runnable {
 		            			deleteFile(songName);
 		            			outBuffer.println("authenticated");
 		            		}
+		            	}
+		            	else if(!isAdmin){
+		            		outBuffer.println("unauthorized");
 		            	}
 		            }
 				   
@@ -330,7 +351,7 @@ public class MTServer implements Runnable {
 					   break;   
 				   }
 				   updateCurrentUser();
-				   System.out.println("updateuser");
+				   System.out.println("updating user");
 			   }
 			   
 			   
@@ -397,23 +418,26 @@ public class MTServer implements Runnable {
 			    * otherwise: out.println("invalid entry")
 			    */
 			   for (User user: users) {
-            	if (user.checkUserName(username) && user.checkPassword(password)) {
-								authenticated = true;
-								outBuffer.println("authenticated");
-								currentUser = user;
-								isAdmin = user.isAdmin();
-								System.out.println(username + " authenticated");
-								break;
-								}
-            }
-            if (authenticated == false) {
-            	outBuffer.println("invalid entry");
-            }
+				   
+				   if (user.checkUserName(username) && user.checkPassword(password)) {
+	            		
+	            		authenticated = true;
+						outBuffer.println("authenticated");
+						currentUser = user;
+						isAdmin = user.isAdmin();
+						System.out.println(username + " authenticated");
+						break;
+					}
+			   }
+			   if (authenticated == false) {
+	            	outBuffer.println("invalid entry");
+	            }
+            
 
 		   }
       }
 	  
-  }
+  }// enf of authentication method
   
   /**
    * Method for reading the stream and then 
@@ -526,32 +550,34 @@ public class MTServer implements Runnable {
        users.add(freshuser);
        
 	}
-
-
-		public static void saveUsers() throws IOException
+	
+	public static void saveUsers() throws IOException
 	{
-      for (User user : users) {
-      	user.saveAccountData();
-       
-			}
-   }
-
-  public void updateCurrentUser() throws IOException
+		for (User user : users) {
+			user.saveAccountData();
+			
+		}
+		
+	}
+	
+	public void updateCurrentUser() throws IOException
 	{
-      for (User user : users) {
-      	if (user.checkUserName(currentUser.getUserName())) {
-      		users.remove(user);
-      		users.add(currentUser);
-      	}
-       
-			}
-   }
+		for (User user : users) {
+			
+			if (user.checkUserName(currentUser.getUserName())) {
+				users.remove(user);
+				users.add(currentUser);
+      		}
+			
+		}
+		
+	}
    
    
   
   
   
-}
+} //End of MTServer class
 
 
 /**

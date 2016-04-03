@@ -130,7 +130,7 @@ public class User {
 			return 0;
 	}
 	
-		public boolean removeFromPlaylist(int i, String song){
+	public boolean removeFromPlaylist(int i, String song){
 			return listOfPlaylists.get(i).removeSong(song);
 	}
 	
