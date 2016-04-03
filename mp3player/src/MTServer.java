@@ -150,7 +150,7 @@ public class MTServer implements Runnable {
 		            	else{
 		            		// String playlistName = splitCmd[1]; // read the playlist name 
 		            		Playlist p = new Playlist(splitCmd[1]); //create new Playlist object
-		            		if (currentUser.searchListOfPlaylists(p)>0) {
+		            		if (currentUser.searchListOfPlaylists(p)>=0) {
 		            			System.out.println("playlist already exists");
 		            			outBuffer.println("playlist already exists"); //send verification back to Client
 		            			break; //TODO maybe lose this break statement --> cause wtf
@@ -184,7 +184,7 @@ public class MTServer implements Runnable {
 		            	else{
 		            		Playlist p = new Playlist(splitCmd[1]);
 		            		int i;
-		            		if ((i = currentUser.searchListOfPlaylists(p)) > 0) {
+		            		if ((i = currentUser.searchListOfPlaylists(p)) >= 0) {
 		            			currentUser.getPlaylist(i);
 		            			outBuffer.println("valid playlist");
 		            			System.out.println("valid playlist");
