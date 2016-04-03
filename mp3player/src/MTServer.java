@@ -390,6 +390,7 @@ public class MTServer implements Runnable {
 					   break;   
 				   }
 				   updateCurrentUser();
+				   saveUsers();
 				   System.out.println("updating user");
 			   }
 			   
