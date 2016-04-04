@@ -20,6 +20,13 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class MTClient {
 
+	
+	static BufferedReader inBuffer;
+	static PrintWriter outBuffer;
+	static Socket clientSocket;
+	static BufferedReader inFromUser;
+	static PlayWAV player;
+	
 	public static void main(String args[]) throws Exception 
     { 
         if (args.length != 2)
@@ -29,22 +36,22 @@ public class MTClient {
         }
 
         // Initialize a client socket connection to the server
-        Socket clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
+        clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
 
         // Initialize input and an output stream for the connection(s)
-		PrintWriter outBuffer = new PrintWriter(clientSocket.getOutputStream(), true);
+		outBuffer = new PrintWriter(clientSocket.getOutputStream(), true);
 		
-        BufferedReader inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
+        inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
 
         // Initialize user input stream
         String line; 
-        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
+        inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
 
         //Assign the audio player to the current client
-        PlayWAV player = new PlayWAV(clientSocket);     
+        player = new PlayWAV(clientSocket);     
         
         
-      promptAuthentication(inFromUser, inBuffer, outBuffer);
+      promptAuthentication();
         
         /********************************************COMMAND PROMPT************************************************/
         
@@ -63,22 +70,8 @@ public class MTClient {
              * PLAY Command
              */
             if(splitCmd[0].equals("play") && player.audioStopped()){
-            	outBuffer.println(line);
-            	String response = inBuffer.readLine();
-                
-            	System.out.println("Server Response: " + response);
             	
-            	if(response.equals("song available")){
-            		//Activate a PlayWAV thread to play the song
-            		player = new PlayWAV(clientSocket);
-            		player.start();
-            	}
-            	else if(response.equals("song unavailable")){
-            		System.out.println("That song does not exist!");
-            	}
-            	else if(response.equals("invalid command")){
-            		System.out.println("Invalid command: play <song name>");
-            	}
+            	playSong(line);
             }
             
             /**
@@ -329,7 +322,7 @@ public class MTClient {
             		
             		if(checkFileExists(songName)) //check that the song exists on the user side
             		{
-            			sendAudioFile(songName, clientSocket); //
+            			sendAudioFile(songName); //
             		}
             	}
             	else if(response.equals("unauthorized")){
@@ -433,6 +426,36 @@ public class MTClient {
     }// END OF MAIN
 	
 	
+	
+	/**
+	 * Method that sends the appropriate commands to the Server to playback a song
+	 * @param inBuffer
+	 * @param outBuffer
+	 * @param line
+	 * @param player
+	 * @param clientSocket
+	 * @throws IOException
+	 */
+	public static void playSong(String line) throws IOException{
+		
+		outBuffer.println(line);
+    	String response = inBuffer.readLine();
+        
+    	System.out.println("Server Response: " + response);
+    	
+    	if(response.equals("song available")){
+    		//Activate a PlayWAV thread to play the song
+    		player = new PlayWAV(clientSocket);
+    		player.start();
+    	}
+    	else if(response.equals("song unavailable")){
+    		System.out.println("That song does not exist!");
+    	}
+    	else if(response.equals("invalid command")){
+    		System.out.println("Invalid command: play <song name>");
+    	}
+	}
+	
 	/**
 	 * Method for prompting the user for username/password and sending to the Server then awaiting response
 	 * @param inFromUser
@@ -440,7 +463,7 @@ public class MTClient {
 	 * @param outBuffer
 	 * @throws IOException
 	 */
-	public static void promptAuthentication(BufferedReader inFromUser, BufferedReader inBuffer, PrintWriter outBuffer) throws IOException{
+	public static void promptAuthentication() throws IOException{
 		
 		boolean authenticated = false;
         String authResponse = "";
@@ -498,7 +521,7 @@ public class MTClient {
 	 * Transfers a song to the Server
 	 * @param fileName
 	 */
-	public static void sendAudioFile(String songName, Socket clientSocket) throws IOException{
+	public static void sendAudioFile(String songName) throws IOException{
 
 		File myFile = new File(songName);
 		byte[] mybytearray = new byte[(int) myFile.length()];
@@ -511,7 +534,40 @@ public class MTClient {
 	}
 	
 	
+} //END OF MTCLIENT CLASS
+
+
+/**
+ * This class plays a playlist
+ * @author askariya
+ *
+ */
+class PlayPlaylist extends Thread {
+	
+	Playlist playlist;
+	MTClient client;
+	
+	public PlayPlaylist(Playlist playlist, MTClient client)
+    {
+        this.playlist = playlist;
+        this.client = client;
+    }
+	
+	public void run(){
+		
+		for(int i = 0; i < playlist.getPlaylistSize(); i++){
+//			client.playSong(null);
+		}
+	}
 }
+
+
+
+
+
+
+
+
 
 
 /**
