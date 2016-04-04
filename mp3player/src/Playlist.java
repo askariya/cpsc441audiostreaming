@@ -101,6 +101,35 @@ public class Playlist {
 		return -1; //No song found
 	}
 	
+	/**
+	 * @param index
+	 * @return the name of the previous song in the playlist (NULL if no song precedes the current one)
+	 */
+	public String getPreviousSong(int index){
+		
+		if((index > 0) && (index < getPlaylistSize())){ //check the song is not the first
+			return getSong(--index); //return name of previous song
+		}
+		else{
+			return null; //otherwise return null
+		}
+		
+	}
+	
+	/**
+	 * @param index
+	 * @return the name of the next song in the playlist (NULL if no song follows the current one)
+	 */
+	public String getNextSong(int index){
+		
+		if((index < (getPlaylistSize()-1)) && (index >= 0)){ // check that the song is not the last one
+			return getSong(++index); //return the name of the next song
+		}
+		else{
+			return null;
+		}
+	}
+	
 	
 } // END OF PLAYLIST CLASS
 
