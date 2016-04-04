@@ -575,6 +575,7 @@ class PlayPlaylist extends Thread {
 	
 	private Playlist playlist;
 	private int pos;
+	private boolean endOfPlaylist;
 	
 	public PlayPlaylist(Playlist playlist)
     {
@@ -610,8 +611,11 @@ class PlayPlaylist extends Thread {
 						MTClient.player.setFinishedSong(false); //show that the song has started
 						break;
 					}
-					
+					if(pos == playlist.getPlaylistSize()-1)
+						pos = 0; //loop the playlist
 				}
+					
+					
 				
 			}
 			
