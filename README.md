@@ -26,7 +26,8 @@ Steps for Running:
 5. Enter Commands
 
 
-	--------------COMMAND LIST-----------------
+					COMMAND LIST
+	-------------------------------------------
 	
 	ADMIN SPECIFIC:
 	-----------------------
