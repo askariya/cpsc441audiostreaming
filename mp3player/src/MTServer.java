@@ -705,6 +705,9 @@ public class MTServer implements Runnable {
 	public static void saveUsers() throws IOException
 	{
 		for (User user : users) {
+			List <Playlist> listOf = user.getPlaylists();
+			for (Playlist list : listOf) {
+			}
 			user.saveAccountData();
 			
 		}
@@ -715,14 +718,13 @@ public class MTServer implements Runnable {
 	{
 		int j = 0;
 		for (int i=0; i<users.size(); i++) {
-			
+			System.out.println(users.get(i).getUserName());
 			if (users.get(i).checkUserName(currentUser.getUserName())) {
 				j=i;
-      		}
-      users.remove(j);
-			users.add(currentUser);
-			
+      }
 		}
+		users.remove(j);
+		users.add(currentUser);
 		
 	}
 

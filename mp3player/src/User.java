@@ -80,7 +80,7 @@ public class User {
 		    String list = br.readLine();
 
 		    while (list != null) {
-		    	Pattern pattern = Pattern.compile("^PLAYLIST:([^|]+|)|(.*)$");
+		    	Pattern pattern = Pattern.compile("^PLAYLIST:([^|]+|)\\|(.*)$");
 					Matcher matcher = pattern.matcher(list);
 					if (matcher.find())
 					{
@@ -159,6 +159,11 @@ public class User {
 	 */
 	public Playlist getPlaylist(int index){
 		return listOfPlaylists.get(index);
+	}
+
+
+		public List <Playlist> getPlaylists(){
+		return listOfPlaylists;
 	}
 	
 	/**

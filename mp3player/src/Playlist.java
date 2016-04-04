@@ -81,7 +81,7 @@ public class Playlist {
 			if(allsongs == null || allsongs.isEmpty()){
 				return;
 			}
-			for (String song: allsongs.split("|")){
+			for (String song: allsongs.split("\\|")){
          this.addSong(song);
       }
 	}
