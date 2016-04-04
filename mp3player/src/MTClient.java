@@ -229,9 +229,16 @@ public class MTClient {
             	String response = inBuffer.readLine();
             	System.out.println("Server Response: " + response);
             	
-            	if(response.equals("valid playlist name"))
+            	if(response.equals("valid playlist"))
                 {
-                	//TODO play playlist here
+            		String plistName = splitCmd[1];
+            		Playlist playlist = new Playlist(plistName);
+            		
+            		while(!(response = inBuffer.readLine()).equals("eof")){
+            			playlist.addSong(response); //save all the songs into a temporary playlist
+                	}
+            		
+            		//TODO play playlist
                 }
             	
             	else if(response.equals("invalid command"))
