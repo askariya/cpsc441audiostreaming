@@ -26,6 +26,7 @@ public class MTClient {
 	static Socket clientSocket;
 	static BufferedReader inFromUser;
 	static PlayWAV player;
+	static PlayPlaylist playbackPlaylist;
 	
 	public static void main(String args[]) throws Exception 
     { 
@@ -229,9 +230,11 @@ public class MTClient {
             		
             		while(!(response = inBuffer.readLine()).equals("eof")){
             			playlist.addSong(response); //save all the songs into a temporary playlist
+            			System.out.println(response);
                 	}
             		
-            		//TODO play playlist
+            		playbackPlaylist = new PlayPlaylist(playlist);
+            		playbackPlaylist.start();
                 }
             	
             	else if(response.equals("invalid command"))
@@ -438,6 +441,8 @@ public class MTClient {
 	 */
 	public static void playSong(String line) throws IOException{
 		
+		System.out.println("Called");
+		
 		outBuffer.println(line);
     	String response = inBuffer.readLine();
         
@@ -545,18 +550,37 @@ public class MTClient {
 class PlayPlaylist extends Thread {
 	
 	Playlist playlist;
-	MTClient client;
 	
-	public PlayPlaylist(Playlist playlist, MTClient client)
+	public PlayPlaylist(Playlist playlist)
     {
         this.playlist = playlist;
-        this.client = client;
     }
 	
 	public void run(){
-		
-		for(int i = 0; i < playlist.getPlaylistSize(); i++){
-//			client.playSong(null);
+		try {
+			
+			MTClient.player.setFinishedSong(true);
+			//cycle through all the songs in the playlist
+			for(int i = 0; i < playlist.getPlaylistSize(); i++){
+				
+				while(true){
+					
+					if(MTClient.player.finishedSong()){
+						System.out.println("Playing " + playlist.getSong(i));
+						MTClient.playSong("play "+playlist.getSong(i)); //simulate user prompting song playback
+						MTClient.player.setFinishedSong(false); //show that the song has started
+						break;
+					}
+					
+				}
+				
+			}
+			
+			
+		}catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				
 		}
 	}
 }
@@ -588,6 +612,7 @@ class PlayWAV extends Thread {
 		stopped = true;
 		sdline = null;
 		threadOver = false;
+		finishedSong = false;
 	}
 	
 	// The parent thread.
@@ -642,6 +667,10 @@ class PlayWAV extends Thread {
     
     public boolean finishedSong(){
     	return finishedSong;
+    }
+    
+    public void setFinishedSong(boolean cond){
+    	finishedSong = cond;
     }
     
     /**
