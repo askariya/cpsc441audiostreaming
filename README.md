@@ -49,6 +49,8 @@ Steps for Running:
 	add_playlist <playlist name>
 	remove_playlist <playlist name>
 	view_playlist <playlist name>
+	next
+	previous
 
 	add_to_playlist <song name> <playlist name>
 	remove_from_playlist <song name> <playlist name>

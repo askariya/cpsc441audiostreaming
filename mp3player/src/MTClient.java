@@ -111,6 +111,15 @@ public class MTClient {
             	player.setFinishedSong(true);
             }
             
+            /**
+             * PREVIOUS
+             * go to previous song in the playlist
+             */
+            else if(splitCmd[0].equals("previous")){
+            	stopSong("stop"); //stop the current song
+            	playbackPlaylist.previousSong();
+            	player.setFinishedSong(true);
+            }
             
             /**
              * LIST Command
@@ -364,7 +373,7 @@ public class MTClient {
 
 
             /**
-             * CREATE_USER <username> password
+             * CREATE_USER <username> <password>
              */
             else if(splitCmd[0].equals("create_user") && player.audioStopped()){
                 
@@ -564,31 +573,40 @@ public class MTClient {
  */
 class PlayPlaylist extends Thread {
 	
-	Playlist playlist;
+	private Playlist playlist;
+	private int pos;
 	
 	public PlayPlaylist(Playlist playlist)
     {
         this.playlist = playlist;
     }
 	
+	public void previousSong(){
+		if(pos > 1){
+			pos-=2;
+		}
+		else{
+			pos = 0;
+		}
+	}
+	
 	public void run(){
 		try {
 			
 			MTClient.player.setFinishedSong(true);
 			//cycle through all the songs in the playlist
-			for(int i = 0; i < playlist.getPlaylistSize(); i++){
+			for(pos = 0; pos < playlist.getPlaylistSize(); pos++){
 				
 				while(true){
 					
 					if(MTClient.player.finishedSong()){
-						System.out.println("Playing " + playlist.getSong(i));
 						try {
 							Thread.sleep(500);
 	 					  } catch (InterruptedException e) {
 							e.printStackTrace();
 	 					  }
-						
-						MTClient.playSong("play "+playlist.getSong(i)); //simulate user prompting song playback
+						System.out.println("Playing " + playlist.getSong(pos));
+						MTClient.playSong("play "+playlist.getSong(pos)); //simulate user prompting song playback
 						MTClient.player.setFinishedSong(false); //show that the song has started
 						break;
 					}
@@ -606,7 +624,7 @@ class PlayPlaylist extends Thread {
 				
 		}
 	}
-}
+} //END OF PLAYPLAYLIST CLASS
 
 
 
