@@ -17,13 +17,26 @@ public class Playlist {
 		return playlistName;
 	}
 	
+	public int getPlaylistSize(){
+		return songArray.size();
+	}
+	
 	
 	/**
 	 * Adds a song to the playlist
 	 * @param songName
 	 */
-	public void addSong(String songName){
-		songArray.add(songName);
+	public boolean addSong(String songName){
+		int songIndex = searchPlaylist(songName);
+		
+		if(songIndex != -1) {
+			System.out.println("Song in playlist");
+			return false;
+		}
+		else{
+			songArray.add(songName);
+		}
+		return true;
 	}
 	
 	
@@ -31,15 +44,18 @@ public class Playlist {
 	 * Removes a song from playlist
 	 * @param songName
 	 */
-	public void removeSong(String songName){
+	public boolean removeSong(String songName){
 		
 		int songIndex = searchPlaylist(songName);
 		
-		if(songIndex == -1)
+		if(songIndex == -1) {
 			System.out.println("Song not in playlist");
+			return false;
+		}
 		else{
 			songArray.remove(songIndex);
 		}
+		return true;
 	}
 	
 	/**
@@ -52,18 +68,20 @@ public class Playlist {
 	}
 
 	public String exportAllSongs(){
-		String allSongs = "PLAYLIST:" + playlistName + "\0";
+		String allSongs = "PLAYLIST:" + playlistName + "|";
 			for (String s : songArray)
 			{
-				allSongs += s + "\0";
+				allSongs += s + "|";
 			}
 
 		return allSongs;
 	}
 
 		public void importAllSongs(String allsongs){
-		String allSongs = "PLAYLIST:" + playlistName + "\0";
-			for (String song: allSongs.split("\0")){
+			if(allsongs == null || allsongs.isEmpty()){
+				return;
+			}
+			for (String song: allsongs.split("\\|")){
          this.addSong(song);
       }
 	}
@@ -83,6 +101,38 @@ public class Playlist {
 		return -1; //No song found
 	}
 	
+	/**
+	 * @param index
+	 * @return the name of the previous song in the playlist (NULL if no song precedes the current one)
+	 */
+	public String getPreviousSong(int index){
+		
+		if((index > 0) && (index < getPlaylistSize())){ //check the song is not the first
+			return getSong(--index); //return name of previous song
+		}
+		else{
+			return null; //otherwise return null
+		}
+		
+	}
 	
-}
+	/**
+	 * @param index
+	 * @return the name of the next song in the playlist (NULL if no song follows the current one)
+	 */
+	public String getNextSong(int index){
+		
+		if((index < (getPlaylistSize()-1)) && (index >= 0)){ // check that the song is not the last one
+			return getSong(++index); //return the name of the next song
+		}
+		else{
+			return null;
+		}
+	}
+	
+	
+} // END OF PLAYLIST CLASS
+
+
+
 

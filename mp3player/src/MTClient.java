@@ -1,8 +1,11 @@
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -17,51 +20,45 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class MTClient {
 
+	
+	static BufferedReader inBuffer;
+	static PrintWriter outBuffer;
+	static Socket clientSocket;
+	static BufferedReader inFromUser;
+	static PlayWAV player;
+	static PlayPlaylist playbackPlaylist;
+	
 	public static void main(String args[]) throws Exception 
     { 
         if (args.length != 2)
         {
-            System.out.println("Usage: TCPClient <Server IP> <Server Port>");
+            System.out.println("Usage: MTClient <Server IP> <Server Port>");
             System.exit(1);
         }
 
         // Initialize a client socket connection to the server
-        Socket clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
+        clientSocket = new Socket(args[0], Integer.parseInt(args[1]));
 
         // Initialize input and an output stream for the connection(s)
-		PrintWriter outBuffer = new PrintWriter(clientSocket.getOutputStream(), true);
+		outBuffer = new PrintWriter(clientSocket.getOutputStream(), true);
 		
-        BufferedReader inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
+        inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); 
 
         // Initialize user input stream
         String line; 
-        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
+        inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
 
         //Assign the audio player to the current client
-        PlayWAV player = new PlayWAV(clientSocket);     
-        /**************************Start of actual implementation*********************/
+        player = new PlayWAV(clientSocket);     
         
-        boolean authenticated = false;
         
-        while(authenticated == false)
-        {
-        	System.out.print("Please enter a username: ");
-            String username = inFromUser.readLine();
-            
-            System.out.print("Please enter a password: ");
-            String password = inFromUser.readLine();
-            
-            outBuffer.println(username + " " + password); //send the user info to the server to be authenticated
-            String response = inBuffer.readLine();
-            
-            if(response.equals("authenticated"))
-            	authenticated = true;
-        }
+      promptAuthentication();
         
+        /********************************************COMMAND PROMPT************************************************/
         
         while(true){
         	// Get user input and send to the server
-            System.out.print("Please enter a message to be sent to the server ('logout' to terminate): ");
+            System.out.print("\nPlease enter a message to be sent to the server ('logout' to terminate): ");
             line = inFromUser.readLine();
         	if(player.threadOver){
         		System.out.println("IT's DEAD");
@@ -74,22 +71,8 @@ public class MTClient {
              * PLAY Command
              */
             if(splitCmd[0].equals("play") && player.audioStopped()){
-            	outBuffer.println(line);
-            	String response = inBuffer.readLine();
-                
-            	System.out.println("Server Response: " + response);
             	
-            	if(response.equals("song available")){
-            		//Activate a PlayWAV thread to play the song
-            		player = new PlayWAV(clientSocket);
-            		player.start();
-            	}
-            	else if(response.equals("song unavailable")){
-            		System.out.println("That song does not exist!");
-            	}
-            	else if(response.equals("invalid command")){
-            		System.out.println("Invalid command: play <song name>");
-            	}
+            	playSong(line);
             }
             
             /**
@@ -104,7 +87,7 @@ public class MTClient {
              * PAUSE Command
              */
             else if(line.contains("pause") && player.isPlaying()){
-            	System.out.println("Paused Playback...");
+            	System.out.println("Paused Playback");
             	player.pauseAudio();
             }
             
@@ -115,14 +98,27 @@ public class MTClient {
              * STOP Command
              */
             else if(line.equals("stop")){
-            	
-            	System.out.println(player.audioStopped()); //TODO delete this
-            	
-            	if(!player.audioStopped())             	{
-            		player.stopAudio();//stop audio playback
-                	outBuffer.println(line); //send the stop command to the server
-            	}
-            	
+            	stopSong(line);
+            }
+            
+            
+            /**
+             * NEXT
+             * skip to next song in the playlist
+             */
+            else if(splitCmd[0].equals("next")){
+            	stopSong("stop"); //stop the current song
+            	player.setFinishedSong(true);
+            }
+            
+            /**
+             * PREVIOUS
+             * go to previous song in the playlist
+             */
+            else if(splitCmd[0].equals("previous")){
+            	stopSong("stop"); //stop the current song
+            	playbackPlaylist.previousSong();
+            	player.setFinishedSong(true);
             }
             
             /**
@@ -135,6 +131,14 @@ public class MTClient {
             	String response;
             	while(!(response = inBuffer.readLine()).equals("eof")){
             		System.out.println(response); //print file names to the user
+            	}
+            	System.out.println("\n");
+            	
+            	
+            	System.out.println("\n-----------PLAYLISTS AVAILABLE-------------\n");
+            	
+            	while(!(response = inBuffer.readLine()).equals("eof")){
+            		System.out.println(response); //print playlist names to the user
             	}
             	System.out.println("\n");
             }
@@ -158,8 +162,45 @@ public class MTClient {
                 {
                 	System.out.println("Invalid command: create_playlist <playlist name>");
                 }
+            	
+            	else if(response.equals("playlist already exists")){
+            		System.out.println("That playlist has already been created");
+            	}
 
             }
+            
+            /**
+             * VIEW <playlist name>
+             * view a playlist
+             */
+            else if(splitCmd[0].equals("view") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid command"))
+                {
+                	System.out.println("Invalid command: create_playlist <playlist name>");
+                }
+            	
+            	else if(response.equals("invalid playlist")){
+            		System.out.println("That playlist does not currently exist");
+            	}
+            	
+            	else if(response.equals("valid playlist")){
+            		
+            		System.out.println("\n-----------Playlist: "+ splitCmd[1] +"-------------\n");
+                	int i = 1;
+                	while(!(response = inBuffer.readLine()).equals("eof")){
+                		System.out.println(i + ". " + response); //print playlist names to the user
+                		i++;
+                	}
+                	System.out.println("\n");
+            	}
+            }
+            
+            
             
             /**
              * REMOVE_PLAYLIST <playlist name>
@@ -180,11 +221,50 @@ public class MTClient {
                 {
                 	System.out.println("Invalid command: remove_playlist <playlist name>");
                 }
+            	else if(response.equals("playlist unavailable")){
+            		System.out.println("Playlist unavailable");
+            	}
+            }
+            
+            /**
+             * PLAY_PLAYLIST <playlist name>
+             * play a playlist
+             */
+            else if(splitCmd[0].equals("play_playlist") && player.audioStopped()){
+            	
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("valid playlist"))
+                {
+            		String plistName = splitCmd[1];
+            		Playlist playlist = new Playlist(plistName);
+            		
+            		while(!(response = inBuffer.readLine()).equals("eof")){
+            			playlist.addSong(response); //save all the songs into a temporary playlist
+            			System.out.println(response);
+                	}
+            		
+            		playbackPlaylist = new PlayPlaylist(playlist);
+            		playbackPlaylist.start();
+                }
+            	
+            	else if(response.equals("invalid command"))
+                {
+                	System.out.println("Invalid command: play_playlist <playlist name>");
+                }
+            	else if(response.equals("playlist unavailable")){
+            		System.out.println("Playlist unavailable");
+            	}
             }
             
             
+            
+            
+            
             /**
-             * ADD_TO_PLAYLIST <song> <playlist>  
+             * ADD_TO_PLAYLIST <song name> <playlist name>  
              */
             else if(splitCmd[0].equals("add_to_playlist") && player.audioStopped()){
             	
@@ -206,8 +286,12 @@ public class MTClient {
             	}
             }
             
+            
+            
+            
+            
             /**
-             * REMOVE_FROM_PLAYLIST <song> <playlist>  
+             * REMOVE_FROM_PLAYLIST <song name> <playlist name>  
              */
             else if(splitCmd[0].equals("remove_from_playlist") && player.audioStopped()){
             	
@@ -228,9 +312,118 @@ public class MTClient {
             		System.out.println("Song or playlist is unavailable");
             	}
             	
+            	else if(response.equals("invalid playlist removal")){
+            		System.out.println("Song or playlist is unavailable");
+            	}
+            	
+            	
+            }
+
+
+            
+            /**
+             * ADD_SONG <song name>
+             */
+            else if(splitCmd[0].equals("add_song") && player.audioStopped()){
+            
+            	outBuffer.println(line); // send to Server
+            	String response = inBuffer.readLine();
+            	System.out.println("Server Response: " + response);
+            	
+            	if(response.equals("invalid command")){
+            		System.out.println("invalid command: add_song <song name>");
+            	}
+            	
+            	else if(response.equals("authenticated")){
+            		
+            		String songName = splitCmd[1];
+            		
+            		if(checkFileExists(songName)) //check that the song exists on the user side
+            		{
+            			sendAudioFile(songName); //
+            		}
+            	}
+            	else if(response.equals("unauthorized")){
+            		System.out.println("You do not have permission to perform this action");
+            	}
             	
             }
             
+            /**
+             * REMOVE_SONG <song name>
+             */
+            else if(splitCmd[0].equals("remove_song") && player.audioStopped()){
+                
+                outBuffer.println(line); // send to Server
+                String response = inBuffer.readLine();
+                System.out.println("Server Response: " + response);
+                
+                if(response.equals("invalid command")){
+                    System.out.println("invalid command: remove_song <song name>");
+                }
+                
+                else if(response.equals("authenticated")){
+                    String songName = splitCmd[1];
+                    System.out.println("The song '" + songName + "' was deleted from the server");
+                }
+                else if(response.equals("unauthorized")){
+                    System.out.println("You do not have permission to perform this action");
+                }
+            }
+
+
+            /**
+             * CREATE_USER <username> <password>
+             */
+            else if(splitCmd[0].equals("create_user") && player.audioStopped()){
+                
+                outBuffer.println(line); // send to Server
+                String response = inBuffer.readLine();
+                System.out.println("Server Response: " + response);
+                
+                if(response.equals("invalid command")){
+                    System.out.println("invalid command: create_user <username> <password>");
+                }
+                
+                else if(response.equals("account already exists")){
+                    String account = splitCmd[1];
+                    System.out.println("The user '" + account + "' already exists");
+                }
+                else if(response.equals("must be admin")){
+                    System.out.println(response);
+                }
+                else if(response.equals("user created")){
+                    String account = splitCmd[1];
+                    System.out.println("The user '" + account + "' was created");
+                }
+            }
+            
+
+            /**
+             * REMOVE_USER <username>
+             */
+            else if(splitCmd[0].equals("remove_user") && player.audioStopped()){
+                
+                outBuffer.println(line); // send to Server
+                String response = inBuffer.readLine();
+                System.out.println("Server Response: " + response);
+                
+                if(response.equals("invalid command")){
+                    System.out.println("invalid command: remove_user <username>");
+                }
+                
+                else if(response.equals("account doesn't exist")){
+                    String account = splitCmd[1];
+                    System.out.println("The user '" + account + "' already exists");
+                }
+                else if(response.equals("must be admin")){
+                    System.out.println(response);
+                }
+                else if(response.equals("user removed")){
+                    String account = splitCmd[1];
+                    System.out.println("The user '" + account + "' was removed");
+                }
+            }
             
             /**
              * LOGOUT
@@ -240,6 +433,10 @@ public class MTClient {
             	outBuffer.println("logout");
             	break;
             }
+
+            else {
+                    System.out.println("unavailable command");
+                }
         }
          
         System.out.println("Client: END");
@@ -248,7 +445,198 @@ public class MTClient {
 	
 	
 	
-}
+	/**
+	 * Method that sends the appropriate commands to the Server to playback a song
+	 * @param inBuffer
+	 * @param outBuffer
+	 * @param line
+	 * @param player
+	 * @param clientSocket
+	 * @throws IOException
+	 */
+	public static void playSong(String line) throws IOException{
+		
+		System.out.println("Called");
+		
+		outBuffer.println(line);
+    	String response = inBuffer.readLine();
+        
+    	System.out.println("Server Response: " + response);
+    	
+    	if(response.equals("song available")){
+    		//Activate a PlayWAV thread to play the song
+    		player = new PlayWAV(clientSocket);
+    		player.start();
+    	}
+    	else if(response.equals("song unavailable")){
+    		System.out.println("That song does not exist!");
+    	}
+    	else if(response.equals("invalid command")){
+    		System.out.println("Invalid command: play <song name>");
+    	}
+	}
+	
+	public static void stopSong(String line){
+		System.out.println(player.audioStopped()); //TODO delete this
+    	
+    	if(!player.audioStopped())             	{
+    		player.stopAudio();//stop audio playback
+        	outBuffer.println(line); //send the stop command to the server
+    	}
+	}
+	
+	/**
+	 * Method for prompting the user for username/password and sending to the Server then awaiting response
+	 * @param inFromUser
+	 * @param inBuffer
+	 * @param outBuffer
+	 * @throws IOException
+	 */
+	public static void promptAuthentication() throws IOException{
+		
+		boolean authenticated = false;
+        String authResponse = "";
+        
+        while(!authenticated) 
+        {
+        	System.out.print("Please enter a username: "); //prompt for username
+            String username = inFromUser.readLine();
+            
+            System.out.print("Please enter a password: "); //prompt for password
+            String password = inFromUser.readLine();
+            
+            outBuffer.println(username + " " + password); //send the user info to the server to be authenticated
+            authResponse = "";
+            
+            while(authResponse.equals("")) //wait for a response
+            {
+                authResponse = inBuffer.readLine();
+                
+                if(authResponse.equals("authenticated"))
+                	authenticated = true; //if the response is positive --> exit loop
+                System.out.println(authResponse);
+            }
+            
+            if(!authenticated) //if still not a positive response --> notify user
+            	System.out.println("Invalid username or password");
+        }
+	}
+	
+	/**
+	 * checks that a file exists in the current directory
+	 * @param fileName
+	 * @return
+	 * @throws IOException
+	 */
+	public static boolean checkFileExists(String fileName) throws IOException
+	{
+		String filePath = System.getProperty("user.dir");
+		File folder = new File(filePath);
+	    File[] listOfFiles = folder.listFiles();
+	    // Send each file name in server directory
+	    for (int i = 0; i < listOfFiles.length; i++)
+	    {
+	   	    //check that the file exists
+	        if (listOfFiles[i].isFile() && listOfFiles[i].getName().equals(fileName) && fileName.contains(".wav"))
+	        {
+	            return true;
+	        }
+	    }
+	      
+	    return false; 
+	}
+	
+	/**
+	 * Transfers a song to the Server
+	 * @param fileName
+	 */
+	public static void sendAudioFile(String songName) throws IOException{
+
+		File myFile = new File(songName);
+		byte[] mybytearray = new byte[(int) myFile.length()];
+	      BufferedInputStream bis = new BufferedInputStream(new FileInputStream(myFile));
+	      bis.read(mybytearray, 0, mybytearray.length);
+	      OutputStream os = clientSocket.getOutputStream();
+	      os.write(mybytearray, 0, mybytearray.length);
+	      os.flush();
+		System.out.println("reached client end");
+	}
+	
+	
+} //END OF MTCLIENT CLASS
+
+
+/**
+ * This class plays a playlist
+ * @author askariya
+ *
+ */
+class PlayPlaylist extends Thread {
+	
+	private Playlist playlist;
+	private int pos;
+	private boolean endOfPlaylist;
+	
+	public PlayPlaylist(Playlist playlist)
+    {
+        this.playlist = playlist;
+    }
+	
+	public void previousSong(){
+		if(pos > 1){
+			pos-=2;
+		}
+		else{
+			pos = 0;
+		}
+	}
+	
+	public void run(){
+		try {
+			
+			MTClient.player.setFinishedSong(true);
+			//cycle through all the songs in the playlist
+			for(pos = 0; pos < playlist.getPlaylistSize(); pos++){
+				
+				while(true){
+					
+					if(MTClient.player.finishedSong()){
+						try {
+							Thread.sleep(500);
+	 					  } catch (InterruptedException e) {
+							e.printStackTrace();
+	 					  }
+						System.out.println("Playing " + playlist.getSong(pos));
+						MTClient.playSong("play "+playlist.getSong(pos)); //simulate user prompting song playback
+						MTClient.player.setFinishedSong(false); //show that the song has started
+						break;
+					}
+					if(pos == playlist.getPlaylistSize()-1)
+						pos = 0; //loop the playlist
+				}
+					
+					
+				
+			}
+			
+			System.out.println("Playlist completed");
+			
+			
+		}catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				
+		}
+	}
+} //END OF PLAYPLAYLIST CLASS
+
+
+
+
+
+
+
+
 
 
 /**
@@ -259,7 +647,7 @@ class PlayWAV extends Thread {
 	//holds a copy of the current client socket
 	private Socket clientSocketWAV;
 	private SourceDataLine sdline;
-	private volatile boolean isPlaying, stopped;
+	private volatile boolean isPlaying, stopped, finishedSong;
 	private AudioInputStream din;
 	public Boolean threadOver;
 	
@@ -269,6 +657,7 @@ class PlayWAV extends Thread {
 		stopped = true;
 		sdline = null;
 		threadOver = false;
+		finishedSong = false;
 	}
 	
 	// The parent thread.
@@ -321,6 +710,14 @@ class PlayWAV extends Thread {
     	return isPlaying;
     }
     
+    public boolean finishedSong(){
+    	return finishedSong;
+    }
+    
+    public void setFinishedSong(boolean cond){
+    	finishedSong = cond;
+    }
+    
     /**
      * Controls the actual streaming and playback of the audio
      */
@@ -328,6 +725,7 @@ class PlayWAV extends Thread {
     	isPlaying = true;
     	stopped = false;
     	din = null;
+    	finishedSong = false;
         
         try{
         	//Read the audio from the server
@@ -372,6 +770,7 @@ class PlayWAV extends Thread {
  				sdline.stop();
  				sdline.close();
  				stopped = true;
+ 				finishedSong = true;
  				//din.close();
  			}
  		

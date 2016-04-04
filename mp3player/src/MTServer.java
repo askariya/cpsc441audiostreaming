@@ -5,14 +5,20 @@
  * http://www.tutorialspoint.com/javaexamples/net_multisoc.htm * 
  * 
  */
+
 //TODO implement 'next' function
-//TODO implement Playlists
 
 import java.util.*;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -21,19 +27,30 @@ import java.net.Socket;
 
 public class MTServer implements Runnable {
    Socket clientSocket;
-   List <User> users; // A List of the users connecting to the Server
-    
+   
+   private static List <User> users; // A List of the users connecting to the Server
+   private User currentUser; // the current User
+   boolean isAdmin;
    
    MTServer(Socket csocket) {
       this.clientSocket = csocket;
+      isAdmin = false; //false by default
    }
 
    
    public static void main(String args[]) throws Exception {
-	  //loadUsers();
-	  ServerSocket serverSocket = new ServerSocket(9001);
+	   
+	   if (args.length != 1)
+       {
+           System.out.println("Usage: MTServer <Server Port>");
+           System.exit(1);
+       }
+	   
+	  ServerSocket serverSocket = new ServerSocket(Integer.parseInt(args[0]));
       System.out.println("Listening");
       
+      
+      	loadUsers();
       
       //while the server is running, keep accepting connections from TCP clients (if any are available)
       while (true) {
@@ -47,19 +64,15 @@ public class MTServer implements Runnable {
     * Run method for the multithreaded Server
     */
    public void run(){
+
 	   try{   
 		   PrintWriter outBuffer = new PrintWriter(clientSocket.getOutputStream(), true);
 		   BufferedReader inBuffer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		   String line = "";
 		   StreamAudio streamer = null;
+
+		   authenticateUser(inBuffer, outBuffer);
 		   
-		   
-		   /*TODO Implement a login here
-		    * 
-		    * Prompt for username and password
-		    * Check if it already exists
-		    * If not; allow creation 
-		   */
 		   
 		   while(true){
 			   
@@ -81,10 +94,10 @@ public class MTServer implements Runnable {
 		               }
 					   
 					   else if(splitCmd[1].length() < 1)
-		            	{
+					   {
 		            		System.out.println("invalid command");
-		            		outBuffer.println("invalid command"); //send error back to client
-		            	}
+		            		outBuffer.println("invalid command"); //send error back to client	
+					   }
 					   
 					   else{
 						   String fileName = splitCmd[1];
@@ -115,9 +128,39 @@ public class MTServer implements Runnable {
 				    * Format: LIST 
 				    */
 				   else if(line.equals("list")){
-					   listSongs(clientSocket, outBuffer);
+					   listSongs(outBuffer);
+					   listPlaylists(outBuffer);
+				   }
+
+				   	/**Create user command
+				    * Format: CREATE_USER <name> <pass>
+				    */
+				   else if(splitCmd[0].equals("create_user")){
+					   if (splitCmd.length == 3) {
+					   	createUser(outBuffer, splitCmd[1], splitCmd[2]);
+					   }
+					   else {
+					   	System.out.println("invalid command");
+		            outBuffer.println("invalid command"); //send error back to client
+					   }
 				   }
 				   
+				   	/**Remove user command
+				    * Format: REMOVE_USER <pass>
+				    */
+				   else if(splitCmd[0].equals("remove_user")){
+					   if (splitCmd.length == 2) {
+					   		removeUser(outBuffer, splitCmd[1]);
+					   }
+					   else {
+					   	System.out.println("invalid command");
+					   		outBuffer.println("invalid command"); //send error back to client
+					   }
+					   removeUser(outBuffer, splitCmd[1]);
+				   }
+
+
+
 				   
 				   /**
 		             * CREATE_PLAYLIST
@@ -137,17 +180,57 @@ public class MTServer implements Runnable {
 		            	}
 		            	
 		            	else{
-		            		String playlistName = splitCmd[1]; // read the playlist name 
-		            		Playlist p = new Playlist(playlistName); //create new Playlist object
+		            		// String playlistName = splitCmd[1]; // read the playlist name 
+		            		Playlist p = new Playlist(splitCmd[1]); //create new Playlist object
+		            		if (currentUser.searchListOfPlaylists(p)>=0) {
+		            			System.out.println("playlist already exists");
+		            			outBuffer.println("playlist already exists"); //send verification back to Client
+		            			break; //TODO maybe lose this break statement --> cause wtf
+		            		}
 		            		
-		            		//TODO add to list of Playlists
-		            		//currentUser.addToListOfPlaylists(p)
+		            		currentUser.addToListOfPlaylists(p);
 		            		
 		            		
 		            		System.out.println("valid playlist name");
 		            		outBuffer.println("valid playlist name"); //send verification back to Client
 		            	}
 				   }
+				   
+				   /**
+		             * VIEW
+		             * View a playlist
+		             */
+				   else if(splitCmd[0].equals("view")){
+					   
+					   if((splitCmd.length != 2))
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to client
+		            	}
+					   
+		            	else{
+		            		Playlist p = new Playlist(splitCmd[1]);
+		            		int i;
+		            		if ((i = currentUser.searchListOfPlaylists(p)) >= 0) {
+		            			currentUser.getPlaylist(i);
+		            			outBuffer.println("valid playlist");
+		            			System.out.println("valid playlist");
+		            			listPlaylistContents(outBuffer, i);
+		            			
+		            		}
+		            		else{
+		            			outBuffer.println("invalid playlist");
+		            			System.out.println("invalid playlist");
+		            		}
+		            	}
+				   }
+				   
+				   
 				   
 				   /**
 				    * REMOVE_PLAYLIST
@@ -170,14 +253,64 @@ public class MTServer implements Runnable {
 		               else{
 		            	   String playlistName = splitCmd[1]; // read the playlist name 
 		            		
-		            		//TODO Remove from list of Playlists
-		            		//currentUser.removeFromListOfPlaylists(p)
-		            	   
-		            	   System.out.println("valid playlist name");
-		            	   outBuffer.println("valid playlist name"); //send verification back to Client
+		            	  Playlist p = new Playlist(splitCmd[1]); //create new Playlist object
+		            	  int i = 0;
+		            		if ((i = currentUser.searchListOfPlaylists(p))>=0) {
+		            			currentUser.removeFromListOfPlaylists(i);
+		            			System.out.println("valid playlist name");
+		            			outBuffer.println("valid playlist name"); //send verification back to Client
+		            		}
+		            	  else {
+		            	  	System.out.println("playlist unavailable");
+		            	     outBuffer.println("playlist unavailable"); //send error back to Client
+		            	  }
 		            	}
 					   
 				   }
+				   
+				   /**
+				    * PLAY_PLAYLIST
+				    * play a playlist
+				    */
+				   else if(splitCmd[0].equals("play_playlist")){
+					   
+					   if((splitCmd.length != 2))
+					   {
+						   System.out.println("invalid command");
+		            	   outBuffer.println("invalid command"); //send error back to client
+		            	   
+					   }
+		               else if(splitCmd[1].length() < 1)
+		               {
+		            	   System.out.println("invalid command");
+		            	   outBuffer.println("invalid command"); //send error back to client
+		            	   
+		               }
+					   
+		               else{
+		            	   String playlistName = splitCmd[1];
+		            	   Playlist playlist = new Playlist(playlistName);
+		            	   int i;
+		            	   if ((i=currentUser.searchListOfPlaylists(playlist))>=0){ //check that the playlist exists
+		            		   
+		            		   playlist = currentUser.getPlaylist(i);
+		            		   
+		            		   outBuffer.println("valid playlist");
+		            		   System.out.println("valid playlist"); //notify the client that the playlist was found
+
+		            		   listPlaylistContents(outBuffer, i); //send the songs back to client
+		            	   }
+		            	   else{
+		            		   System.out.println("playlist unavailable");   
+		            		   outBuffer.println("playlist unavailable"); //send error back to Client
+		            	   }
+		            	   
+		               }
+					   
+				   } //END of Play Playlist
+				   
+				   
+				   
 				   
 				   /**
 		             * ADD_TO_PLAYLIST
@@ -198,20 +331,24 @@ public class MTServer implements Runnable {
 		            	
 		            	else{
 		            		String songName = splitCmd[1];
-		            		String playlistName = splitCmd[2];
-		            		
-		            		/*TODO Check that the song and playlist are on the server
-		            		 * Add an && statement that also checks for playlist specific to the User
-		            		 */
+		            		Playlist p = new Playlist(splitCmd[2]);
+		            				            		
 		            		if(checkFileExists(songName)){
-		            			
-		            			//....
-		            			
-		            			System.out.println("valid playlist addition");
+		            			int i =0;
+		            			//check if playlist exists
+		            			if ((i=currentUser.searchListOfPlaylists(p))>=0){
+		            				currentUser.addToPlaylist(i,songName);
+		            				outBuffer.println("valid playlist addition");
+		            				System.out.println("valid playlist addition");
+		            			}
+		            			else{
+		            				System.out.println("playlist unavailable");
+		            			}
+		            
 							}
 		            		else{
 		            			outBuffer.println("song or playlist unavailable");
-		            			System.out.println("song or playlist unavailable");
+		            			System.out.println("song unavailable");
 		            		}
 		            		
 		            		
@@ -222,7 +359,7 @@ public class MTServer implements Runnable {
 		             * REMOVE_FROM_PLAYLIST
 		             * Removes a song from a playlist
 		             */
-		            else if(splitCmd[0].equals("add_to_playlist")){
+		            else if(splitCmd[0].equals("remove_from_playlist")){
 		            	
 		            	if(splitCmd.length != 3)
 		            	{
@@ -235,14 +372,89 @@ public class MTServer implements Runnable {
 		            		outBuffer.println("invalid command"); //send error back to client
 		            	}
 		            	
-		            	/*TODO Check if the playlist (and song within) exists 
-		            	 * 
-		            	 * Call method to check that the playlist exists for current user
-		            	 * Call method to check that the song exists within the playlist
-		            	 */
+		            	else {
+		            		String songName = splitCmd[1];
+		            		Playlist p = new Playlist(splitCmd[2]);
+		            		System.out.println("what");
+		            		if(checkFileExists(songName)){
+		            			int i =0;
+		            			if ((i=currentUser.searchListOfPlaylists(p))>=0){
+		            				currentUser.removeFromPlaylist(i,songName);
+		            				outBuffer.println("valid playlist removal");
+		            				System.out.println("valid playlist removal");
+		            			}
+		            			else{
+		            				outBuffer.println("invalid playlist removal");
+		            			}
+		            		}
+		            		else{
+	            				outBuffer.println("invalid playlist removal");
+	            			}
+		            	}	
 
 		            }
+		            
+				   	/**
+				   	 * ADD_SONG
+				   	 * Adds a Client's local song to the Server
+				   	 */
+		            else if(splitCmd[0].equals("add_song")){
+		            	
+		            	if(splitCmd.length != 2)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command");
+		            	}
+		            	
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to the client
+		            	}
+		            	
+		            	//change to isAdmin condition
+		            	else if(isAdmin){
+		            		outBuffer.println("authenticated");
+		            		String songName = splitCmd[1];
+		            		saveFile(songName);
+		            	}
+		            	
+		            	else if(!isAdmin){
+		            		outBuffer.println("unauthorized");
+		            	}
+		            }
 				   
+				   /**
+				    * REMOVE_SONG
+				    * Removes a song from the Server 
+				    */
+		            else if(splitCmd[0].equals("remove_song")){
+		            	
+		            	if(splitCmd.length != 2)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command");
+		            	}
+		            	
+		            	else if(splitCmd[1].length() < 1)
+		            	{
+		            		System.out.println("invalid command");
+		            		outBuffer.println("invalid command"); //send error back to the client
+		            	}
+		            	//change to isAdmin condition
+		            	else if(isAdmin){
+		            		String songName = splitCmd[1];
+		            		
+		            		if(checkFileExists(songName)){
+		            			
+		            			deleteFile(songName);
+		            			outBuffer.println("authenticated");
+		            		}
+		            	}
+		            	else if(!isAdmin){
+		            		outBuffer.println("unauthorized");
+		            	}
+		            }
 				   
 				   
 				   
@@ -250,8 +462,12 @@ public class MTServer implements Runnable {
 				    *  Format: LOGOUT
 				    */
 				   else if(line.equals("logout")){
+					   saveUsers();
 					   break;   
 				   }
+				   updateCurrentUser();
+				   saveUsers();
+				   System.out.println("updating user");
 			   }
 			   
 			   
@@ -261,11 +477,124 @@ public class MTServer implements Runnable {
 			   System.out.println("Client@Port#"+ clientSocket.getPort() +": Disconnected");
 		   }catch (IOException e) {
 			   e.printStackTrace();
-			   } 
+			   } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 		   
    }
   
+  /**
+   * A method for user authentication
+   * @param inBuffer
+   * @param outBuffer
+   */
+  public void authenticateUser(BufferedReader inBuffer, PrintWriter outBuffer) throws IOException{ 
+	  
+	  boolean authenticated = false;
+	  
+	  while(!authenticated) 
+      {
+		   String userpass = "";
+		   
+		   while(userpass.equals(""))
+		   {
+			   userpass = inBuffer.readLine(); //read the username & password
+		   }
+		   
+		   String[] splitAuth = userpass.split(" ", 2);
+		   
+		   if(splitAuth.length != 2) //check that both username and password were entered
+		   {
+			   outBuffer.println("invalid entry");
+		   }
+		   else if(splitAuth[0].length() < 1 || splitAuth[1].length() < 1) //check that there are characters username/password
+		   {
+			   outBuffer.println("invalid entry");
+		   }
+		   
+		   else
+		   {
+			   String username = splitAuth[0]; //username and password entered in by the user
+			   String password = splitAuth[1];
+
+			   /*
+			    * check the username and password against stored users
+			    * 
+			    * determine account type and privileges
+			    * 
+			    * initialize the User variable (currentUser)
+			    * 
+			    * if username and password are valid: outBuffer.println("authenticated")
+			    * outBuffer.println("authenticated");
+			    * authenticated = true;
+			    * 
+			    * if user is an admin --> isAdmin = true;
+			    * 
+			    * otherwise: out.println("invalid entry")
+			    */
+			   for (User user: users) {
+				   
+				   if (user.checkUserName(username) && user.checkPassword(password)) {
+	            		
+	            		authenticated = true;
+						outBuffer.println("authenticated");
+						currentUser = user;
+						isAdmin = user.isAdmin();
+						System.out.println(username + " authenticated");
+						break;
+					}
+			   }
+			   if (authenticated == false) {
+	            	outBuffer.println("invalid entry");
+	            }
+            
+
+		   }
+      }
+	  
+  }// enf of authentication method
   
+  /**
+   * Method for reading the stream and then 
+   * @param socket
+   * @throws Exception
+   */
+  public void saveFile(String fileName) throws Exception {
+	   
+	  int portNum = clientSocket.getLocalPort();
+		String pNum = String.valueOf(portNum);
+		
+		String fileNameNew = pNum + "-" + fileName;
+	  	
+	    byte[] mybytearray = new byte[1024];
+	    InputStream is = clientSocket.getInputStream();
+	    FileOutputStream fos = new FileOutputStream(fileNameNew);
+	    BufferedOutputStream bos = new BufferedOutputStream(fos);
+	    int bytesRead;
+	    
+	    while((bytesRead = is.read(mybytearray, 0, mybytearray.length)) != -1){
+	    	bos.write(mybytearray, 0, bytesRead);
+	    	
+	    	if(bytesRead != 1024) //TODO I cheated --> otherwise FT is infinite
+	    		break;
+	    }
+	    bos.close();
+	    
+	    System.out.println("reached server end");
+  }
+  
+  
+  // TODO this doesn't work
+  public void deleteFile(String fileName) throws IOException{
+	  String filePath = System.getProperty("user.dir");
+	  Path path = Paths.get(filePath, fileName);
+	  System.out.println(path.toString());
+	  Files.delete(path);
+  }
+  
+  
+   
   public boolean checkFileExists(String fileName) throws IOException
   {
       String filePath = System.getProperty("user.dir");
@@ -290,7 +619,7 @@ public class MTServer implements Runnable {
 	 * @param buff
 	 * @throws IOException
 	 */
-	public void listSongs(Socket cSocket, PrintWriter outBuffer) throws IOException
+	public void listSongs(PrintWriter outBuffer) throws IOException
 	{
 		String filePath = System.getProperty("user.dir");
 		String outputString = "";
@@ -310,9 +639,44 @@ public class MTServer implements Runnable {
 	      
 	}
 	
+	/**
+	 * Method that lists all the Playlists specific to the user
+	 * @param outBuffer
+	 * @throws IOException
+	 */
+	public void listPlaylists(PrintWriter outBuffer)throws IOException{
+		
+		for(int i = 0; i < currentUser.playlistCount(); i++){
+			Playlist p = currentUser.getPlaylist(i);
+            outBuffer.println(p.getName());
+		}
+		
+		String eof = "eof";
+	    outBuffer.println(eof);
+	}
+	
+	/**
+	 * Method that lists all the songs in a playlist
+	 * @param outBuffer
+	 * @param playlistIndex
+	 */
+	public void listPlaylistContents(PrintWriter outBuffer, int playlistIndex){
+		System.out.println("reached here");
+		Playlist p = currentUser.getPlaylist(playlistIndex);
+		System.out.println(p.getPlaylistSize());
+		
+		for(int i= 0; i < p.getPlaylistSize(); i++){
+			outBuffer.println(p.getSong(i));
+			System.out.println(p.getSong(i));
+		}
+		
+		String eof = "eof";
+	    outBuffer.println(eof);
+	}
 
-	public void loadUsers() throws IOException
+	public static void loadUsers() throws IOException
 	{
+      users = new ArrayList<User>(); // initialize a static list of users
       String filePath = System.getProperty("user.dir");
       File folder = new File(filePath);
       File[] listOfFiles = folder.listFiles();
@@ -322,23 +686,100 @@ public class MTServer implements Runnable {
           if (listOfFiles[i].isFile() && listOfFiles[i].getName().matches("^USER-.+"))
           {
               User tempuser = new User(listOfFiles[i].getName().substring(5));
-              tempuser.loadAccountData();
-              users.add(tempuser);
+              if (tempuser.loadAccountData()) { // if data not corrupt
+              	users.add(tempuser);
+              }
           }
       }
       // Add default admin and user
+      for (User user : users){
+      	if (user.checkUserName("admin")) {
+      		return;
+      	}
+      }
        User admin = new User("admin", "pass", "admin");
        User freshuser = new User("user", "pass", "user");
        users.add(admin);
        users.add(freshuser);
        
 	}
+	
+	public static void saveUsers() throws IOException
+	{
+		for (User user : users) {
+			List <Playlist> listOf = user.getPlaylists();
+			for (Playlist list : listOf) {
+			}
+			user.saveAccountData();
+			
+		}
+		
+	}
+	
+	public void updateCurrentUser() throws IOException
+	{
+		int j = 0;
+		for (int i=0; i<users.size(); i++) {
+			System.out.println(users.get(i).getUserName());
+			if (users.get(i).checkUserName(currentUser.getUserName())) {
+				j=i;
+      }
+		}
+		users.remove(j);
+		users.add(currentUser);
+		
+	}
+
+	public void createUser(PrintWriter outBuffer, String name, String pass) throws IOException
+	{
+		if (!isAdmin) {
+			outBuffer.println("must be admin");
+			return;
+		}
+
+		for (User user : users) {
+			if (user.checkUserName(name)) {
+				outBuffer.println("account already exists");
+				return;
+			}
+			
+		}
+		User newUser = new User(name, pass, "user");
+		users.add(newUser);
+		outBuffer.println("user created");
+			
+		}
+
+
+	public void removeUser(PrintWriter outBuffer, String name) throws IOException
+	{
+		if (!isAdmin) {
+			outBuffer.println("must be admin");
+			return;
+		}
+
+		int j = 0;
+		for (int i=0; i<users.size(); i++) {
+			
+			if (users.get(i).checkUserName(name)) {
+				j=i;
+      }
+      users.remove(j);
+      deleteFile("USER-" + name);
+      System.out.println("user removed");
+      outBuffer.println("user removed");
+      return;
+		}
+		outBuffer.println("account doesn't exist");
+			
+		}
+		
    
    
   
   
   
-}
+} //End of MTServer class
 
 
 /**
