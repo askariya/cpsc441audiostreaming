@@ -87,7 +87,7 @@ public class MTClient {
              * PAUSE Command
              */
             else if(line.contains("pause") && player.isPlaying()){
-            	System.out.println("Paused Playback...");
+            	System.out.println("Paused Playback");
             	player.pauseAudio();
             }
             
@@ -98,15 +98,19 @@ public class MTClient {
              * STOP Command
              */
             else if(line.equals("stop")){
-            	
-            	System.out.println(player.audioStopped()); //TODO delete this
-            	
-            	if(!player.audioStopped())             	{
-            		player.stopAudio();//stop audio playback
-                	outBuffer.println(line); //send the stop command to the server
-            	}
-            	
+            	stopSong(line);
             }
+            
+            
+            /**
+             * NEXT
+             * skip to next song in the playlist
+             */
+            else if(splitCmd[0].equals("next")){
+            	stopSong("stop"); //stop the current song
+            	player.setFinishedSong(true);
+            }
+            
             
             /**
              * LIST Command
@@ -245,6 +249,8 @@ public class MTClient {
             		System.out.println("Playlist unavailable");
             	}
             }
+            
+            
             
             
             
@@ -461,6 +467,15 @@ public class MTClient {
     	}
 	}
 	
+	public static void stopSong(String line){
+		System.out.println(player.audioStopped()); //TODO delete this
+    	
+    	if(!player.audioStopped())             	{
+    		player.stopAudio();//stop audio playback
+        	outBuffer.println(line); //send the stop command to the server
+    	}
+	}
+	
 	/**
 	 * Method for prompting the user for username/password and sending to the Server then awaiting response
 	 * @param inFromUser
@@ -567,6 +582,12 @@ class PlayPlaylist extends Thread {
 					
 					if(MTClient.player.finishedSong()){
 						System.out.println("Playing " + playlist.getSong(i));
+						try {
+							Thread.sleep(500);
+	 					  } catch (InterruptedException e) {
+							e.printStackTrace();
+	 					  }
+						
 						MTClient.playSong("play "+playlist.getSong(i)); //simulate user prompting song playback
 						MTClient.player.setFinishedSong(false); //show that the song has started
 						break;
@@ -575,6 +596,8 @@ class PlayPlaylist extends Thread {
 				}
 				
 			}
+			
+			System.out.println("Playlist completed");
 			
 			
 		}catch (IOException e) {
