@@ -515,7 +515,7 @@ class PlayWAV extends Thread {
 	//holds a copy of the current client socket
 	private Socket clientSocketWAV;
 	private SourceDataLine sdline;
-	private volatile boolean isPlaying, stopped;
+	private volatile boolean isPlaying, stopped, finishedSong;
 	private AudioInputStream din;
 	public Boolean threadOver;
 	
@@ -577,6 +577,10 @@ class PlayWAV extends Thread {
     	return isPlaying;
     }
     
+    public boolean finishedSong(){
+    	return finishedSong;
+    }
+    
     /**
      * Controls the actual streaming and playback of the audio
      */
@@ -584,6 +588,7 @@ class PlayWAV extends Thread {
     	isPlaying = true;
     	stopped = false;
     	din = null;
+    	finishedSong = false;
         
         try{
         	//Read the audio from the server
@@ -628,6 +633,7 @@ class PlayWAV extends Thread {
  				sdline.stop();
  				sdline.close();
  				stopped = true;
+ 				finishedSong = true;
  				//din.close();
  			}
  		

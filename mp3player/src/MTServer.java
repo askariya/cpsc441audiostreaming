@@ -133,7 +133,7 @@ public class MTServer implements Runnable {
 				   }
 
 				   	/**Create user command
-				    * Format: create_user <name> <pass>
+				    * Format: CREATE_USER <name> <pass>
 				    */
 				   else if(splitCmd[0].equals("create_user")){
 					   if (splitCmd.length!=3) {
@@ -145,13 +145,13 @@ public class MTServer implements Runnable {
 				   }
 				   
 				   	/**Remove user command
-				    * Format: remove_user <pass>
+				    * Format: REMOVE_USER <pass>
 				    */
 				   else if(splitCmd[0].equals("remove_user")){
 					   if (splitCmd.length!=2) {
 					   		System.out.println("invalid command");
-		            outBuffer.println("invalid command"); //send error back to client
-		            break;
+					   		outBuffer.println("invalid command"); //send error back to client
+					   		break;
 					   }
 					   removeUser(outBuffer, splitCmd[1]);
 				   }
@@ -264,6 +264,50 @@ public class MTServer implements Runnable {
 		            	}
 					   
 				   }
+				   
+				   /**
+				    * PLAY_PLAYLIST
+				    * play a playlist
+				    */
+				   else if(splitCmd[0].equals("play_playlist")){
+					   
+					   if((splitCmd.length != 2))
+					   {
+						   System.out.println("invalid command");
+		            	   outBuffer.println("invalid command"); //send error back to client
+		            	   
+					   }
+		               else if(splitCmd[1].length() < 1)
+		               {
+		            	   System.out.println("invalid command");
+		            	   outBuffer.println("invalid command"); //send error back to client
+		            	   
+		               }
+					   
+		               else{
+		            	   String playlistName = splitCmd[1];
+		            	   Playlist playlist = new Playlist(playlistName);
+		            	   int i;
+		            	   if ((i=currentUser.searchListOfPlaylists(playlist))>=0){ //check that the playlist exists
+		            		   
+		            		   playlist = currentUser.getPlaylist(i);
+		            		   
+		            		   outBuffer.println("valid playlist");
+		            		   System.out.println("valid playlist"); //notify the client that the playlist was found
+
+		            		   listPlaylistContents(outBuffer, i); //send the songs back to client
+		            	   }
+		            	   else{
+		            		   System.out.println("playlist unavailable");   
+		            		   outBuffer.println("playlist unavailable"); //send error back to Client
+		            	   }
+		            	   
+		               }
+					   
+				   } //END of Play Playlist
+				   
+				   
+				   
 				   
 				   /**
 		             * ADD_TO_PLAYLIST
