@@ -136,22 +136,25 @@ public class MTServer implements Runnable {
 				    * Format: CREATE_USER <name> <pass>
 				    */
 				   else if(splitCmd[0].equals("create_user")){
-					   if (splitCmd.length!=3) {
-					   		System.out.println("invalid command");
-		            outBuffer.println("invalid command"); //send error back to client
-		            break;
+					   if (splitCmd.length == 3) {
+					   	createUser(outBuffer, splitCmd[1], splitCmd[2]);
 					   }
-					   createUser(outBuffer, splitCmd[1], splitCmd[2]);
+					   else {
+					   	System.out.println("invalid command");
+		            outBuffer.println("invalid command"); //send error back to client
+					   }
 				   }
 				   
 				   	/**Remove user command
 				    * Format: REMOVE_USER <pass>
 				    */
 				   else if(splitCmd[0].equals("remove_user")){
-					   if (splitCmd.length!=2) {
-					   		System.out.println("invalid command");
+					   if (splitCmd.length == 2) {
+					   		removeUser(outBuffer, splitCmd[1]);
+					   }
+					   else {
+					   	System.out.println("invalid command");
 					   		outBuffer.println("invalid command"); //send error back to client
-					   		break;
 					   }
 					   removeUser(outBuffer, splitCmd[1]);
 				   }
