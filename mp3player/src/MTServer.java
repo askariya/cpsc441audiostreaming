@@ -581,7 +581,6 @@ public class MTServer implements Runnable {
 	    }
 	    bos.close();
 	    
-	    System.out.println("reached server end");
   }
   
   
@@ -661,13 +660,10 @@ public class MTServer implements Runnable {
 	 * @param playlistIndex
 	 */
 	public void listPlaylistContents(PrintWriter outBuffer, int playlistIndex){
-		System.out.println("reached here");
 		Playlist p = currentUser.getPlaylist(playlistIndex);
-		System.out.println(p.getPlaylistSize());
 		
 		for(int i= 0; i < p.getPlaylistSize(); i++){
 			outBuffer.println(p.getSong(i));
-			System.out.println(p.getSong(i));
 		}
 		
 		String eof = "eof";

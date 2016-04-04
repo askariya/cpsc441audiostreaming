@@ -61,7 +61,6 @@ public class MTClient {
             System.out.print("\nPlease enter a message to be sent to the server ('logout' to terminate): ");
             line = inFromUser.readLine();
         	if(player.threadOver){
-        		System.out.println("IT's DEAD");
         		player.interrupt();
         	}
         	//split command into two parts (at the space)
@@ -151,7 +150,6 @@ public class MTClient {
             	
             	outBuffer.println(line); // send to Server
             	String response = inBuffer.readLine();
-            	System.out.println("Server Response: " + response);
             	
             	if(response.equals("valid playlist name"))
                 {
@@ -177,7 +175,6 @@ public class MTClient {
             	
             	outBuffer.println(line); // send to Server
             	String response = inBuffer.readLine();
-            	System.out.println("Server Response: " + response);
             	
             	if(response.equals("invalid command"))
                 {
@@ -234,7 +231,7 @@ public class MTClient {
             	
             	outBuffer.println(line); // send to Server
             	String response = inBuffer.readLine();
-            	System.out.println("Server Response: " + response);
+            	
             	
             	if(response.equals("valid playlist"))
                 {
@@ -243,7 +240,6 @@ public class MTClient {
             		
             		while(!(response = inBuffer.readLine()).equals("eof")){
             			playlist.addSong(response); //save all the songs into a temporary playlist
-            			System.out.println(response);
                 	}
             		
             		playbackPlaylist = new PlayPlaylist(playlist);
@@ -271,7 +267,7 @@ public class MTClient {
             	outBuffer.println(line); // send to Server
             	String response = inBuffer.readLine();
             	
-            	System.out.println("Server Response: " + response);
+            	
             	
             	if(response.equals("invalid command")){
             		System.out.println("invalid command: add_to_playlist <song name> <playlist name>");
@@ -328,7 +324,6 @@ public class MTClient {
             
             	outBuffer.println(line); // send to Server
             	String response = inBuffer.readLine();
-            	System.out.println("Server Response: " + response);
             	
             	if(response.equals("invalid command")){
             		System.out.println("invalid command: add_song <song name>");
@@ -356,7 +351,6 @@ public class MTClient {
                 
                 outBuffer.println(line); // send to Server
                 String response = inBuffer.readLine();
-                System.out.println("Server Response: " + response);
                 
                 if(response.equals("invalid command")){
                     System.out.println("invalid command: remove_song <song name>");
@@ -379,7 +373,6 @@ public class MTClient {
                 
                 outBuffer.println(line); // send to Server
                 String response = inBuffer.readLine();
-                System.out.println("Server Response: " + response);
                 
                 if(response.equals("invalid command")){
                     System.out.println("invalid command: create_user <username> <password>");
@@ -406,7 +399,6 @@ public class MTClient {
                 
                 outBuffer.println(line); // send to Server
                 String response = inBuffer.readLine();
-                System.out.println("Server Response: " + response);
                 
                 if(response.equals("invalid command")){
                     System.out.println("invalid command: remove_user <username>");
@@ -456,12 +448,10 @@ public class MTClient {
 	 */
 	public static void playSong(String line) throws IOException{
 		
-		System.out.println("Called");
 		
 		outBuffer.println(line);
     	String response = inBuffer.readLine();
         
-    	System.out.println("Server Response: " + response);
     	
     	if(response.equals("song available")){
     		//Activate a PlayWAV thread to play the song
@@ -477,7 +467,6 @@ public class MTClient {
 	}
 	
 	public static void stopSong(String line){
-		System.out.println(player.audioStopped()); //TODO delete this
     	
     	if(!player.audioStopped())             	{
     		player.stopAudio();//stop audio playback
@@ -514,7 +503,6 @@ public class MTClient {
                 
                 if(authResponse.equals("authenticated"))
                 	authenticated = true; //if the response is positive --> exit loop
-                System.out.println(authResponse);
             }
             
             if(!authenticated) //if still not a positive response --> notify user
@@ -559,7 +547,6 @@ public class MTClient {
 	      OutputStream os = clientSocket.getOutputStream();
 	      os.write(mybytearray, 0, mybytearray.length);
 	      os.flush();
-		System.out.println("reached client end");
 	}
 	
 	
@@ -619,7 +606,7 @@ class PlayPlaylist extends Thread {
 				
 			}
 			
-			System.out.println("Playlist completed");
+			System.out.println("Playlist: " + playlist.getName() + " completed");
 			
 			
 		}catch (IOException e) {
@@ -778,7 +765,6 @@ class PlayWAV extends Thread {
         {
         	System.out.println(e);
         }
-        System.out.println("leaving thread");
         threadOver = true;
     }
     
