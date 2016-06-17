@@ -31,30 +31,30 @@ Steps for Running:
 	
 	ADMIN SPECIFIC:
 	-----------------------
-	add_song <song name>
-	remove_song <song name>
-	create_user <username> <pass>
-	remove_user <username>
+	- add_song <song name>,
+	- remove_song <song name>,
+	- create_user <username> <pass>,
+	- remove_user <username>
 
 	
 	ALL USERS
 	-----------------------
-	play <song name>
-	pause
-	resume
-	stop
+	- play <song name>
+	- pause
+	- resume
+	- stop
 
-	list 
+	- list 
 	
-	play_playlist <playlist name>
-	add_playlist <playlist name>
-	remove_playlist <playlist name>
-	view_playlist <playlist name>
-	next
-	previous
+	- play_playlist <playlist name>
+	- add_playlist <playlist name>
+	- remove_playlist <playlist name>
+	- view_playlist <playlist name>
+	- next
+	- previous
 
-	add_to_playlist <song name> <playlist name>
-	remove_from_playlist <song name> <playlist name>
+	- add_to_playlist <song name> <playlist name>
+	- remove_from_playlist <song name> <playlist name>
 
 
 
